@@ -1,14 +1,14 @@
 require('dotenv').load(); // Load env vars
 const http          = require('http');
 const Discord       = require('discord.js'); // Discord API
-const ytdl          = require('ytdl-core');  // Stream youtube mp3
+const ytdl          = require('ytdl-core');  // Stream youtube mp3s
 const bot           = new Discord.Client();  // Sets up bot discord client API
 const youtube       = require('./youtube');
 const hostname      = 'localhost';
 const port          = 9999;
 const token         = process.env.TOKEN;
 const streamOptions = { seek: 0, volume: 0.2 };
-const dispatcher    = {}; // Stores reference to the mp3
+const dispatcher    = {}; // Stores reference to the mp3 stream
 const yt            = youtube(process.env.YOUTUBE_API_KEY);
 const { parseCommand,
         parseVoiceChannelName,
@@ -79,13 +79,13 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
     '$pause': function() {
       if (dispatcher.stream) {
         dispatcher.stream.pause();
-        message.replay('Song paused. Use $resume to resume playback');
+        message.reply('Song paused. Use $resume to resume playback');
       }
     },
     '$resume': function() {
       if (dispatcher.stream) {
         dispatcher.stream.resume();
-        message.replay('Resuming playback!');
+        message.reply('Resuming playback!');
       }
     },
     '$help': function() {
@@ -115,6 +115,8 @@ bot.on('message', message => {
     return false;
   };
 
+  // TODO: use a generator function to update the command API
+  // instead of instantiating the class on every message event.
   const commands = Commands({
     bot,
     ytdl,
@@ -125,6 +127,8 @@ bot.on('message', message => {
 
   if (typeof commands[command] === 'function') {
     commands[command](channels);
+  } else {
+    message.reply('Command not found. Use $help to list available commands.');
   }
 
 });
