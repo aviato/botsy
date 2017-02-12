@@ -127,7 +127,7 @@ bot.on('message', message => {
 
   if (typeof commands[command] === 'function') {
     commands[command](channels);
-  } else {
+  } else if (!commands[command] && command[0] === '$') {
     message.reply('Command not found. Use $help to list available commands.');
   }
 
