@@ -7,7 +7,7 @@ const youtube       = require('./youtube');
 const hostname      = 'localhost';
 const port          = 9999;
 const token         = process.env.TOKEN;
-const streamOptions = { seek: 0, volume: 0.5 };
+const streamOptions = { seek: 0, volume: 0.2 };
 const dispatcher    = {}; // Stores reference to the mp3
 const yt            = youtube(process.env.YOUTUBE_API_KEY);
 const { parseCommand,
@@ -65,7 +65,7 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
         message.reply(`${ newLevel } is far too loud. 0-1 is a good range.`);
         return;
       } else if (isNaN(newLevel)) {
-        message.reply(`${ newLevel } is not a number. Try again.`);
+        message.reply(`Your volume level wasn't a number. Try again!`);
         return;
       }
 
@@ -73,6 +73,18 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
         // Sets the volume relative to the input stream
         // 1 is normal, 0.5 is half, 2 is double.
         dispatcher.stream.setVolume(newLevel);
+      }
+    },
+    '$pause': function() {
+      if (dispatcher.stream) {
+        // This will pause the voiceConnection, not the mp3 stream
+        dispatcher.stream.pause();
+      }
+    },
+    '$resume': function() {
+      if (dispatcher.stream) {
+        // This will pause the voiceConnection, not the mp3 stream
+        dispatcher.stream.resume();
       }
     }
   };
@@ -82,7 +94,7 @@ bot.on('message', message => {
   const theMatrix  = bot.guilds.get(process.env.MATRIX_GUILD_ID);
   const conductors = theMatrix.roles.get(process.env.CONDUCTOR_ID).members;
   const command    = parseCommand(message.content);
-  const channels   = bot.channels; // Collection of channels
+  const channels   = bot.channels;
 
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
     return;
