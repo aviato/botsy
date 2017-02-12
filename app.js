@@ -16,7 +16,8 @@ const { parseCommand,
         playSong,
         volumeLevel,
         joinChannel,
-        isConductor }  = require('./helpers');
+        isConductor,
+        formatHelpMessage }  = require('./helpers');
 const getSearchResults = require('./getSearchResults');
 
 // Basic web server
@@ -86,6 +87,10 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
         // This will pause the voiceConnection, not the mp3 stream
         dispatcher.stream.resume();
       }
+    },
+    '$help': function() {
+      const commands = Object.keys(this);
+      message.reply(formatHelpMessage(commands));
     }
   };
 };

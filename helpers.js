@@ -6,6 +6,25 @@ const parseSong = messageContent => {
   return song;
 };
 
+const formatHelpMessage = commands => {
+  if (!Array.isArray(commands)) {
+    return;
+  }
+
+  return (
+`
+
+Chocobot | v0.3
+---------------
+
+Hello there!
+Looks like you could use some help. Here are some useful commands:
+
+${commands.join('\n')}
+`
+  );
+};
+
 const volumeLevel = messageContent => {
   return parseFloat(messageContent.split(' ')[1], 10);
 };
@@ -77,5 +96,6 @@ module.exports = {
   parseCommand,
   joinChannel,
   parseVoiceChannelName,
-  isConductor
+  isConductor,
+  formatHelpMessage
 };
