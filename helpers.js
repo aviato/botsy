@@ -15,7 +15,6 @@ const formatHelpMessage = commands => {
 `
 
 Chocobot | v0.3
----------------
 
 Hello there!
 Looks like you could use some help. Here are some useful commands:
