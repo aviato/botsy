@@ -14,7 +14,7 @@ const { parseCommand,
         parseVoiceChannelName,
         parseSong,
         playSong,
-        setVolume,
+        volumeLevel,
         joinChannel,
         isConductor }  = require('./helpers');
 const getSearchResults = require('./getSearchResults');
@@ -54,12 +54,26 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
       );
     },
     '$stop': function() {
-      if (dispatcher.song) {
-        dispatcher.song.end();
+      if (dispatcher.stream) {
+        dispatcher.stream.end();
       }
     },
     '$volume': function() {
-      setVolume(streamOptions, message.content.split(' ')[1]);
+      const newLevel = volumeLevel(message.content);
+
+      if (newLevel > 1) {
+        message.reply(`${ newLevel } is far too loud. 0-1 is a good range.`);
+        return;
+      } else if (isNaN(newLevel)) {
+        message.reply(`${ newLevel } is not a number. Try again.`);
+        return;
+      }
+
+      if (dispatcher.stream) {
+        // Sets the volume relative to the input stream
+        // 1 is normal, 0.5 is half, 2 is double.
+        dispatcher.stream.setVolume(newLevel);
+      }
     }
   };
 };
