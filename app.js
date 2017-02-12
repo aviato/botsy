@@ -78,14 +78,14 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
     },
     '$pause': function() {
       if (dispatcher.stream) {
-        // This will pause the voiceConnection, not the mp3 stream
         dispatcher.stream.pause();
+        message.replay('Song paused. Use $resume to resume playback');
       }
     },
     '$resume': function() {
       if (dispatcher.stream) {
-        // This will pause the voiceConnection, not the mp3 stream
         dispatcher.stream.resume();
+        message.replay('Resuming playback!');
       }
     },
     '$help': function() {
