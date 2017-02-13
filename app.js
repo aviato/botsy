@@ -1,22 +1,23 @@
 require('dotenv').load(); // Load env vars
 const http          = require('http');
 const Discord       = require('discord.js'); // Discord API
-const ytdl          = require('ytdl-core');  // Stream youtube mp3
+const ytdl          = require('ytdl-core');  // Stream youtube mp3s
 const bot           = new Discord.Client();  // Sets up bot discord client API
 const youtube       = require('./youtube');
 const hostname      = 'localhost';
 const port          = 9999;
 const token         = process.env.TOKEN;
-const streamOptions = { seek: 0, volume: 0.5 };
-const dispatcher    = {}; // Stores reference to the mp3
+const streamOptions = { seek: 0, volume: 0.2 };
+const dispatcher    = {}; // Stores reference to the mp3 stream
 const yt            = youtube(process.env.YOUTUBE_API_KEY);
 const { parseCommand,
         parseVoiceChannelName,
         parseSong,
         playSong,
-        setVolume,
+        volumeLevel,
         joinChannel,
-        isConductor }  = require('./helpers');
+        isConductor,
+        formatHelpMessage }  = require('./helpers');
 const getSearchResults = require('./getSearchResults');
 
 // Basic web server
@@ -54,12 +55,42 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
       );
     },
     '$stop': function() {
-      if (dispatcher.song) {
-        dispatcher.song.end();
+      if (dispatcher.stream) {
+        dispatcher.stream.end();
       }
     },
     '$volume': function() {
-      setVolume(streamOptions, message.content.split(' ')[1]);
+      const newLevel = volumeLevel(message.content);
+
+      if (newLevel > 1) {
+        message.reply(`${ newLevel } is far too loud. 0-1 is a good range.`);
+        return;
+      } else if (isNaN(newLevel)) {
+        message.reply(`Your volume level wasn't a number. Try again!`);
+        return;
+      }
+
+      if (dispatcher.stream) {
+        // Sets the volume relative to the input stream
+        // 1 is normal, 0.5 is half, 2 is double.
+        dispatcher.stream.setVolume(newLevel);
+      }
+    },
+    '$pause': function() {
+      if (dispatcher.stream) {
+        dispatcher.stream.pause();
+        message.reply('Song paused. Use $resume to resume playback');
+      }
+    },
+    '$resume': function() {
+      if (dispatcher.stream) {
+        dispatcher.stream.resume();
+        message.reply('Resuming playback!');
+      }
+    },
+    '$help': function() {
+      const commands = Object.keys(this);
+      message.reply(formatHelpMessage(commands));
     }
   };
 };
@@ -68,7 +99,7 @@ bot.on('message', message => {
   const theMatrix  = bot.guilds.get(process.env.MATRIX_GUILD_ID);
   const conductors = theMatrix.roles.get(process.env.CONDUCTOR_ID).members;
   const command    = parseCommand(message.content);
-  const channels   = bot.channels; // Collection of channels
+  const channels   = bot.channels;
 
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
     return;
@@ -84,6 +115,8 @@ bot.on('message', message => {
     return false;
   };
 
+  // TODO: use a generator function to update the command API
+  // instead of instantiating the class on every message event.
   const commands = Commands({
     bot,
     ytdl,
@@ -94,6 +127,8 @@ bot.on('message', message => {
 
   if (typeof commands[command] === 'function') {
     commands[command](channels);
+  } else if (!commands[command] && command[0] === '$') {
+    message.reply('Command not found. Use $help to list available commands.');
   }
 
 });

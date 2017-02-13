@@ -6,8 +6,26 @@ const parseSong = messageContent => {
   return song;
 };
 
-const setVolume = (options, level) => {
-  options.volume = level;
+const formatHelpMessage = commands => {
+  if (!Array.isArray(commands)) {
+    return;
+  }
+
+  return (
+`
+
+Chocobot | v0.3
+
+Hello there!
+Looks like you could use some help. Here are some useful commands:
+
+${commands.join('\n')}
+`
+  );
+};
+
+const volumeLevel = messageContent => {
+  return parseFloat(messageContent.split(' ')[1], 10);
 };
 
 const parseCommand = messageContent => {
@@ -57,7 +75,7 @@ const playSong = (message, url, dispatcherRef, channels, ytdl, streamOptions) =>
       });
 
       // Store a reference to the stream so that it can be modified at runtime
-      dispatcherRef.song = dispatcher;
+      dispatcherRef.stream = dispatcher;
     });
 
     dispatchConnect.catch(error => {
@@ -73,9 +91,10 @@ const playSong = (message, url, dispatcherRef, channels, ytdl, streamOptions) =>
 module.exports = {
   parseSong,
   playSong,
-  setVolume,
+  volumeLevel,
   parseCommand,
   joinChannel,
   parseVoiceChannelName,
-  isConductor
+  isConductor,
+  formatHelpMessage
 };
