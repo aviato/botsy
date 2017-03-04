@@ -88,6 +88,17 @@ const playSong = (message, url, dispatcherRef, channels, ytdl, streamOptions) =>
   });
 };
 
+const isUndefined = value => value === undefined;
+
+const anyUndefined = (object, keyNames) => {
+  for (let i = 0, keyName = keyNames[i]; i < keyNames.length; i++) {
+    if (isUndefined(object[keyName])) {
+      return true;
+    }
+  }
+  return false;
+};
+
 module.exports = {
   parseSong,
   playSong,
@@ -96,5 +107,7 @@ module.exports = {
   joinChannel,
   parseVoiceChannelName,
   isConductor,
-  formatHelpMessage
+  formatHelpMessage,
+  isUndefined,
+  anyUndefined
 };

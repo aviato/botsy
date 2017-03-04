@@ -1,15 +1,16 @@
 require('dotenv').load(); // Load env vars
-const http          = require('http');
-const Discord       = require('discord.js'); // Discord API
-const ytdl          = require('ytdl-core');  // Stream youtube mp3s
-const bot           = new Discord.Client();  // Sets up bot discord client API
-const youtube       = require('./youtube');
-const hostname      = 'localhost';
-const port          = 9999;
-const token         = process.env.TOKEN;
-const streamOptions = { seek: 0, volume: 0.2 };
-const dispatcher    = {}; // Stores reference to the mp3 stream
-const yt            = youtube(process.env.YOUTUBE_API_KEY);
+const http             = require('http');
+const Discord          = require('discord.js'); // Discord API
+const ytdl             = require('ytdl-core');  // Stream youtube mp3s
+const bot              = new Discord.Client();  // Sets up bot discord client API
+const youtube          = require('./youtube');
+const hostname         = 'localhost';
+const port             = 9999;
+const token            = process.env.TOKEN;
+const streamOptions    = { seek: 0, volume: 0.2 };
+const dispatcher       = {}; // Stores reference to the mp3 stream
+const yt               = youtube(process.env.YOUTUBE_API_KEY);
+const getSearchResults = require('./getSearchResults');
 const { parseCommand,
         parseVoiceChannelName,
         parseSong,
@@ -18,7 +19,7 @@ const { parseCommand,
         joinChannel,
         isConductor,
         formatHelpMessage }  = require('./helpers');
-const getSearchResults = require('./getSearchResults');
+
 
 // Basic web server
 const server = http.createServer( ( req, res ) => {
@@ -104,16 +105,6 @@ bot.on('message', message => {
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
     return;
   }
-
-  const isUndefined = value => value === undefined;
-  const anyUndefined = (object, keyNames) => {
-    for (let i = 0, keyName = keyNames[i]; i < keyNames.length; i++) {
-      if (isUndefined(object[keyName])) {
-        return true;
-      }
-    }
-    return false;
-  };
 
   // TODO: use a generator function to update the command API
   // instead of instantiating the class on every message event.
