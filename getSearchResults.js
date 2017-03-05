@@ -45,7 +45,7 @@ const getSearchResults = (playSong, searchUrl, videoUrl, message, dispatcher, ch
       } catch (e) {
         console.log(e.message);
       }
-      });
+    });
   }).on('error', e => {
     console.log(e.message);
   })
