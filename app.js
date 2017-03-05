@@ -90,7 +90,14 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
       }
     },
     '$help': function() {
-      const commands = Object.keys(this);
+      const commands = [
+        '$play [songname] | play a song or video (audio only)',
+        '$stop | stops playback of the current song',
+        '$pause | pauses playback of the current song',
+        '$resume | resumes playback of the current song',
+        '$join [channelname] | join the specified channel (be sure to check your spelling - damn lazy programmer...)',
+        '$volume [volumelevel - ex. 1 (full volume), ex. .5 (half volume)] | sets the volume of the current song'
+      ]
       message.reply(formatHelpMessage(commands));
     }
   };
