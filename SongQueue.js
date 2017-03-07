@@ -28,3 +28,4 @@ const songQueue = () => {
   return storage;
 };
 
+module.exports = songQueue;
