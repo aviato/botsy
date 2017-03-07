@@ -1,5 +1,6 @@
 require('dotenv').load(); // Load env vars
 const http             = require('http');
+const querystring      = require('querystring');
 const Discord          = require('discord.js'); // Discord API
 const ytdl             = require('ytdl-core');  // Stream youtube mp3s
 const bot              = new Discord.Client();  // Sets up bot discord client API
@@ -7,9 +8,9 @@ const youtube          = require('./youtube');
 const hostname         = 'localhost';
 const port             = 9999;
 const token            = process.env.TOKEN;
-const streamOptions    = { seek: 0, volume: 0.2 };
+const streamOptions    = { seek: 0, volume: .07 };
 const dispatcher       = {}; // Stores reference to the mp3 stream
-const yt               = youtube(process.env.YOUTUBE_API_KEY);
+const yt               = youtube(process.env.YOUTUBE_API_KEY, querystring);
 const getSearchResults = require('./getSearchResults');
 const { parseCommand,
         parseVoiceChannelName,
