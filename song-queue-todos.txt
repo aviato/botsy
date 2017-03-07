@@ -1,0 +1,37 @@
+Notes from 3/6/17 -
+
+Basic user story for playlists / songqueues:
+  * as a user I want to be able to use $play and play a song (yt api to start)
+  * if I use $play to play another song while a song is playing, that song should be placed into the queue
+  * when the currently playing song ends, use the dequeue method to get the next song and play that
+  * if a user uses the $skip command, the current song should be stopped, and the next song from the queue should start playing
+  * if a user uses the $stop command, the entire playlist should be wiped out
+
+Notes:
+Have the data structure to build a basic playlist... now need to organize my code
+in such a way that allows me to use the song names, urls, or functions that I place
+into the queue.
+
+Currently the Commands class is instantiated on every message, which is inefficient and causes many problems.
+It would be prudent to place the Command class instance somewhere else, and call updates to that class in the form of
+methods when a new message is received. There is probably a better way to do this, but I can't think of anything else right
+now because it's fairly late and I'm now officially an old fart.
+
+Also, the way #getSearchResults works is pretty confusing, and by doing things in my bad, dependency injection sort of way,
+I've made things really brittle. I'm passing down a billion arguments to that function in particular. Another problem is that
+#playSong is tightly coupled with the ytdl library as of now. It would probably be wise to pass a callback or something into
+playSong, so that in the future I can pass in a callback from whichever API I please.
+
+Something worth nothing is that I could probably use what's already provided by the Youtube API to implement some kind of
+YT playlist support. There is no need to reinvent the wheel, but there are clear benefits in having a lightweight API that I can use to play
+songs from different third-party APIs.
+
+It just feels like the structure still has too many things that are tightly coupled together. I estimate that untangling everything and
+getting playlists up and running will take me about 5 hours of work. I have some time this weekend, so if I feel up to it I'll probably do
+a solid refactor and get that feature in.
+
+API wishlist:
+  * Urban Dictionary
+  * Soundcloud
+  * Wikipedia
+  * Weather
