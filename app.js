@@ -12,6 +12,7 @@ const streamOptions    = { seek: 0, volume: .07 };
 const dispatcher       = {}; // Stores reference to the mp3 stream
 const yt               = youtube(process.env.YOUTUBE_API_KEY, querystring);
 const getSearchResults = require('./getSearchResults');
+const SongQueue        = require('./SongQueue.js'); 
 const { parseCommand,
         parseVoiceChannelName,
         parseSong,
