@@ -1,5 +1,5 @@
 # chocobot
-A simple discord bot
+A simple discord bot that plays your favorite songs and annoys your friends
 
 ## Installation
 Node.js is required to run `chocobot`. Install that first if you don't have it.
