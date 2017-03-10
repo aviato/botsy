@@ -24,3 +24,8 @@ Windows
 * `npm install`
 * Create a `.env` file and fill in the details
 * `forever start app.js`
+
+## Setup
+Create a role called `Conductor` in your discord server settings.
+Assign the Conductor role as you see fit. *Only Conductors can give the bot commands.*
+
