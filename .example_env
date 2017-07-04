@@ -1,4 +1,4 @@
 TOKEN           = token
 YOUTUBE_API_KEY = key
 CONDUCTOR_ID    = super_secret_id
-MATRIX_GUILD_ID = super_secret_guild_id
+GUILD_ID        = super_secret_guild_id

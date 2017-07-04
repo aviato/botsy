@@ -114,10 +114,14 @@ const botGenerator = BotGenerator({
 });
 
 client.on('message', message => {
-  const theMatrix  = client.guilds.get(process.env.MATRIX_GUILD_ID);
-  const conductors = theMatrix.roles.get(process.env.CONDUCTOR_ID).members;
+  const guild      = client.guilds.get(process.env.GUILD_ID);
+  const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
   const command    = parseCommand(message.content);
   const channels   = client.channels;
+
+  if (message.author.bot) {
+    return;
+  }
 
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
     message.reply('Ah ah ah... you didn\'t say the magic word!');
