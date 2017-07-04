@@ -114,14 +114,13 @@ const botGenerator = BotGenerator({
 });
 
 client.on('message', message => {
-  const guild      = client.guilds.get(process.env.GUILD_ID);
+  const guild = client.guilds.get(process.env.GUILD_ID);
+
+  if (!guild.available || message.author.bot) return;
+
   const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
   const command    = parseCommand(message.content);
   const channels   = client.channels;
-
-  if (message.author.bot) {
-    return;
-  }
 
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
     message.reply('Ah ah ah... you didn\'t say the magic word!');
@@ -131,7 +130,7 @@ client.on('message', message => {
   const bot = botGenerator(message);
 
   if (typeof bot[command] === 'function') {
-    bot[command](channels);
+    bot[command]();
   } else if (!bot[command] && command[0] === '$') {
     message.reply('Command not found. Use $help to list available commands.');
   }
