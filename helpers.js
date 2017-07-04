@@ -14,6 +14,7 @@ const formatHelpMessage = commands => {
   return (
 `
 
+Botsy | v0.4
 
 Hello there!
 Looks like you could use some help. Here are some useful commands:
