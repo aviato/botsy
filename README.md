@@ -1,8 +1,8 @@
-# chocobot
+# botsy
 A simple discord bot that plays your favorite songs and annoys your friends
 
 ## Installation
-Node.js is required to run `chocobot`. Install that first if you don't have it.
+Node.js is required to run `botsy`. Install that first if you don't have it.
 
 Mac OSX
 * `git clone` this repo
@@ -26,6 +26,11 @@ Windows
 * `forever start app.js`
 
 ## Setup
-Create a role called `Conductor` in your discord server settings.
-Assign the Conductor role as you see fit. *Only Conductors can give the bot commands.*
+You'll need to create a `.env` file and fill out all the fields you see in the `.example_env` file
+* Create a bot and token that Discord will recognize (try [here](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) if you don't know how to do this)
+* Get yourself a Youtube API key so that you can use the google search API (try [here](https://developers.google.com/youtube/v3/getting-started) if you're stuck)
+* In the Discord client, go to Server Settings>Roles and create a role called `Conductor` (it doesn't have to be called conductor, but that's how it's referred to in the source). Note: you'll want enable the option "Allow anyone to @mention this role" to be able to quickly grab your role ID
+* In some chat channel type "\@Conductor". This will display your role ID (looks like "<@&101010101010101010>"), grab the numeric digits only and paste those into your `.env` file for the `CONDUCTOR_ID` section
+* Next Go to Server Settings>Widget, copy the server id, and paste it into the `GUILD_ID` section of your `.env` file
+
 
