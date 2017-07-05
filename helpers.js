@@ -20,6 +20,7 @@ Hello there!
 Looks like you could use some help. Here are some useful commands:
 
 ${commands.join('\n')}
+
 `
   );
 };

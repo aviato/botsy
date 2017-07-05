@@ -3,7 +3,7 @@ const http             = require('http');
 const querystring      = require('querystring');
 const Discord          = require('discord.js'); // Discord API
 const ytdl             = require('ytdl-core');  // Stream youtube mp3s
-const client              = new Discord.Client();  // Sets up client discord client API
+const client           = new Discord.Client();  // Sets up client discord client API
 const youtube          = require('./youtube');
 const hostname         = 'localhost';
 const port             = 9999;
@@ -35,7 +35,7 @@ server.listen( port, hostname, () => {
 });
 
 client.on('ready', () => {
-  console.log(`Login in as ${ client.user.username }`);
+  console.log(`Connected as ${ client.user.username }`);
 });
 
 const BotGenerator = ({ client, ytdl, streamOptions, dispatcher }) => {
@@ -48,13 +48,9 @@ const BotGenerator = ({ client, ytdl, streamOptions, dispatcher }) => {
         let song = parseSong(message.content);
         getSearchResults(
           playSong,
-          yt.generateSearchUri(song),
-          yt.generateVideoLink,
-          message,
-          dispatcher,
-          client.channels,
-          ytdl,
-          streamOptions
+          { searchUrl: yt.generateSearchUri(song), resultUrl: yt.generateVideoLink },
+          { message, dispatcher, channels: client.channels },
+          { ytdl, streamOptions }
         );
       },
       '$stop': function() {

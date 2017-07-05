@@ -1,8 +1,8 @@
 const https = require('https');
 
-const getSearchResults = (playSong, searchUrl, videoUrl, message, dispatcher, channels, ytdl, streamOptions) => {
+const getSearchResults = (playSong, searchMeta, discordMeta, streamMeta) => {
 
-  https.get(searchUrl, res => {
+  https.get(searchMeta.searchUrl, res => {
     const statusCode  = res.statusCode;
     const contentType = res.headers['content-type'];
 
@@ -36,8 +36,9 @@ const getSearchResults = (playSong, searchUrl, videoUrl, message, dispatcher, ch
           return item.id.videoId;
         });
 
-        const result = videoUrl(firstSearchResult.id.videoId);
-
+        const result = searchMeta.resultUrl(firstSearchResult.id.videoId);
+        const { message, dispatcher, channels } = discordMeta;
+        const { ytdl, streamOptions } = streamMeta;
         playSong(message, result, dispatcher, channels, ytdl, streamOptions);
 
         message.reply(result);
