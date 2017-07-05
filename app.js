@@ -38,6 +38,14 @@ client.on('ready', () => {
   console.log(`Connected as ${ client.user.username }`);
 });
 
+const Song = message => {
+  const songName = parseSong(message.content);
+  return {
+    searchUrl: yt.generateSearchUri(songName),
+    resultUrl: yt.generateVideoLink,
+  };
+};
+
 const BotGenerator = ({ client, ytdl, streamOptions, dispatcher }) => {
   return message => {
     return {
@@ -45,10 +53,9 @@ const BotGenerator = ({ client, ytdl, streamOptions, dispatcher }) => {
         joinChannel(client, parseVoiceChannelName(message), message);
       },
       '$play': function() {
-        let song = parseSong(message.content);
         getSearchResults(
           playSong,
-          { searchUrl: yt.generateSearchUri(song), resultUrl: yt.generateVideoLink },
+          Song(message),
           { message, dispatcher, channels: client.channels },
           { ytdl, streamOptions }
         );
