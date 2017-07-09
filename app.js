@@ -1,21 +1,13 @@
 require('dotenv').load(); // Load env vars
 const http             = require('http');
-const querystring      = require('querystring');
 const Discord          = require('discord.js'); // Discord API
 const ytdl             = require('ytdl-core');  // Stream youtube mp3s
 const client           = new Discord.Client();  // Sets up client discord client API
-const youtube          = require('./youtube');
+const Youtube          = require('./youtube');
 const hostname         = 'localhost';
 const port             = 9999;
 const token            = process.env.TOKEN;
-const streamOptions    = { seek: 0, volume: .07 };
-const dispatcher       = {}; // Stores reference to the mp3 stream
-const yt               = youtube(process.env.YOUTUBE_API_KEY, querystring);
-const getSearchResults = require('./getSearchResults');
-const { parseCommand,
-        parseVoiceChannelName,
-        parseSong,
-        playSong,
+const { parseBotCommand,
         volumeLevel,
         joinChannel,
         isConductor,
@@ -38,83 +30,153 @@ client.on('ready', () => {
   console.log(`Connected as ${ client.user.username }`);
 });
 
-const Song = message => {
-  const songName = parseSong(message.content);
-  return {
-    searchUrl: yt.generateSearchUri(songName),
-    resultUrl: yt.generateVideoLink,
-  };
-};
+class BotHelpers {
+  static parseVoiceChannelName( message ) {
+    if (!message.hasOwnProperty('content')) {
+      // Maybe throw error here in try catch block
+      console.log(`Message object has no property 'content'`);
+      return;
+    }
+    const content = message.content;
+    const firstSpace = content.indexOf(' ');
+    return content.substr(
+      content.indexOf(' ') + 1
+    );
+  }
 
-const BotGenerator = ({ client, ytdl, streamOptions, dispatcher }) => {
-  return message => {
-    return {
-      '$join': function() {
-        joinChannel(client, parseVoiceChannelName(message), message);
-      },
-      '$play': function() {
-        getSearchResults(
-          playSong,
-          Song(message),
-          { message, dispatcher, channels: client.channels },
-          { ytdl, streamOptions }
+  static formatHelpMessage(commands) {
+    if (!Array.isArray(commands)) {
+      return;
+    }
+
+    return (
+`
+
+Botsy | v0.4
+
+Hello there!
+Looks like you could use some help. Here are some useful commands:
+
+${commands.join('\n')}
+
+`
+    );
+  }
+}
+
+class Bot {
+  constructor( client, Youtube ) {
+    this.client = client;
+    this.youtube = new Youtube(
+      process.env.YOUTUBE_API_KEY
+    );
+    this.ytdl = ytdl;
+    this.message = null;
+  }
+
+  getSearchResults() {
+    return this.youtube.makeSearchUrl(this.message)
+               .getSearchResults(this.message);
+  }
+
+  // Update the message
+  setMessage(message) {
+    this.message = message;
+    return this;
+  }
+
+  setVolume() {
+    return this.youtube.setVolume(this.message);
+  }
+
+  pauseYoutubeVideo() {
+    return this.youtube.pausePlayback(this.message);
+  }
+
+  resumeYoutubeVideo() {
+    return this.youtube.resumePlayback(this.message);
+  }
+
+  setDispatcher(dispatcher) {
+    this.dispatcher = dispatcher;
+    return this;
+  }
+
+  playYoutubeSong() {
+    const channels = this.client.channels.get(this.message.member.voiceChannelID);
+    return channels.join().then((connection) => {
+      this.getSearchResults().then((url) => {
+        this.youtube.playSong(
+          this.message,
+          url,
+          this.setDispatcher.bind(this),
+          connection
         );
-      },
-      '$stop': function() {
-        if (dispatcher.stream) {
-          dispatcher.stream.end();
-        }
-      },
-      '$volume': function() {
-        const newLevel = volumeLevel(message.content);
+      });
+    });
+  }
 
-        if (newLevel > 1) {
-          message.reply(`${ newLevel } is far too loud. 0-1 is a good range.`);
-          return;
-        } else if (isNaN(newLevel)) {
-          message.reply(`Your volume level wasn't a number. Try again!`);
-          return;
-        }
+  /*
+    @param {client} - Discord instance
+    @param {Message} message instance
+    @return {Promise}
+  */
+  joinChannel() {
+    const channelName = BotHelpers.parseVoiceChannelName(this.message);
+    console.log(channelName)
+    const discordChannel = this.client.channels.find(
+        channel => channel.name === channelName
+    );
+    if (!discordChannel) {
+      this.message.reply(`Oops! Channel name ${ channelName } does not exist.`);
+      return;
+    }
 
-        if (dispatcher.stream) {
-          // Sets the volume relative to the input stream
-          // 1 is normal, 0.5 is half, 2 is double.
-          dispatcher.stream.setVolume(newLevel);
-        }
-      },
-      '$pause': function() {
-        if (dispatcher.stream) {
-          dispatcher.stream.pause();
-          message.reply('Song paused. Use $resume to resume playback');
-        }
-      },
-      '$resume': function() {
-        if (dispatcher.stream) {
-          dispatcher.stream.resume();
-          message.reply('Resuming playback!');
-        }
-      },
-      '$help': function() {
-        const commands = [
-          '$play [songname] | play a song or video (audio only)',
-          '$stop | stops playback of the current song',
-          '$pause | pauses playback of the current song',
-          '$resume | resumes playback of the current song',
-          '$join [channelname] | join the specified channel (be sure to check your spelling - damn lazy programmer...)',
-          '$volume [volumelevel - ex. 1 (full volume), ex. .5 (half volume)] | sets the volume of the current song'
-        ]
-        message.reply(formatHelpMessage(commands));
-      }
-    };
+    console.log(discordChannel.join())
+
+    return discordChannel.join();
+  }
+
+}
+
+const commandDict = (bot, message) => {
+  return {
+    '$join': function() {
+      return bot.setMessage(message).joinChannel(client);
+    },
+    '$play': function() {
+      return bot.setMessage(message).playYoutubeSong()
+    },
+    '$stop': function() {
+      return bot.setMessage(message).stopPlayback();
+    },
+    '$volume': function() {
+      return bot.setMessage(message).setVolume();
+    },
+    '$pause': function() {
+      return bot.setMessage(message).pauseYoutubeVideo();
+    },
+    '$resume': function() {
+      return bot.setMessage(message).resumeYoutubeVideo();
+    },
+    '$help': function() {
+      const commands = [
+        '$play [songname] | play a song or video (audio only)',
+        '$stop | stops playback of the current song',
+        '$pause | pauses playback of the current song',
+        '$resume | resumes playback of the current song',
+        '$join [channelname] | join the specified channel (be sure to check your spelling - damn lazy programmer...)',
+        '$volume [volumelevel - ex. 1 (full volume), ex. .5 (half volume)] | sets the volume of the current song'
+      ]
+      message.reply(formatHelpMessage(commands));
+    }
   };
 };
 
-const botGenerator = BotGenerator({
+const bot = new Bot(
   client,
-  ytdl,
-  streamOptions,
-  dispatcher
-});
+  Youtube
+);
 
 client.on('message', message => {
   const guild = client.guilds.get(process.env.GUILD_ID);
@@ -122,7 +184,7 @@ client.on('message', message => {
   if (!guild.available || message.author.bot) return;
 
   const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
-  const command    = parseCommand(message.content);
+  const command    = parseBotCommand(message.content);
   const channels   = client.channels;
 
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
@@ -130,11 +192,11 @@ client.on('message', message => {
     return;
   }
 
-  const bot = botGenerator(message);
+  const commands = commandDict(bot, message);
 
-  if (typeof bot[command] === 'function') {
-    bot[command]();
-  } else if (!bot[command] && command[0] === '$') {
+  if (typeof commands[command] === 'function') {
+    commands[command]();
+  } else if (!commands[command] && command[0] === '$') {
     message.reply('Command not found. Use $help to list available commands.');
   }
 
