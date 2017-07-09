@@ -1,29 +1,17 @@
 require('dotenv').load(); // Load env vars
-const http             = require('http');
-const querystring      = require('querystring');
-const Discord          = require('discord.js'); // Discord API
-const ytdl             = require('ytdl-core');  // Stream youtube mp3s
-const bot              = new Discord.Client();  // Sets up bot discord client API
-const youtube          = require('./youtube');
-const hostname         = 'localhost';
-const port             = 9999;
-const token            = process.env.TOKEN;
-const streamOptions    = { seek: 0, volume: .07 };
-const dispatcher       = {}; // Stores reference to the mp3 stream
-const yt               = youtube(process.env.YOUTUBE_API_KEY, querystring);
-const getSearchResults = require('./getSearchResults');
-const { parseCommand,
-        parseVoiceChannelName,
-        parseSong,
-        playSong,
-        volumeLevel,
-        joinChannel,
+const https = require('https');
+const Discord = require('discord.js'); // Discord API
+const client = new Discord.Client();  // Sets up client discord client API
+const Youtube = require('./youtube');
+const hostname = 'localhost';
+const port = 9999;
+const Bot = require('./bot');
+const { parseBotCommand,
         isConductor,
         formatHelpMessage }  = require('./helpers');
 
-
 // Basic web server
-const server = http.createServer( ( req, res ) => {
+const server = https.createServer( ( req, res ) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
   res.end('Hello World \n');
@@ -34,61 +22,31 @@ server.listen( port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
-bot.on('ready', () => {
-  console.log(`Login in as ${ bot.user.username }`);
+client.on('ready', () => {
+  console.log(`Connected as ${ client.user.username }`);
 });
 
-const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
+// Translate bot commands into method calls
+const commandDict = (bot, message) => {
   return {
     '$join': function() {
-      joinChannel(bot, parseVoiceChannelName(message), message);
+      return bot.setMessage(message).joinChannel(client);
     },
     '$play': function() {
-      let song = parseSong(message.content);
-      getSearchResults(
-        playSong,
-        yt.generateSearchUri(song),
-        yt.generateVideoLink,
-        message,
-        dispatcher,
-        bot.channels,
-        ytdl,
-        streamOptions
-      );
+      return bot.setMessage(message).playYoutubeSong()
     },
     '$stop': function() {
-      if (dispatcher.stream) {
-        dispatcher.stream.end();
-      }
+      //console.log('here is the... bot instance?', bot.setMessage(message));
+      return bot.setMessage(message).stopYoutubePlayback();
     },
     '$volume': function() {
-      const newLevel = volumeLevel(message.content);
-
-      if (newLevel > 1) {
-        message.reply(`${ newLevel } is far too loud. 0-1 is a good range.`);
-        return;
-      } else if (isNaN(newLevel)) {
-        message.reply(`Your volume level wasn't a number. Try again!`);
-        return;
-      }
-
-      if (dispatcher.stream) {
-        // Sets the volume relative to the input stream
-        // 1 is normal, 0.5 is half, 2 is double.
-        dispatcher.stream.setVolume(newLevel);
-      }
+      return bot.setMessage(message).setYoutubeVolume();
     },
     '$pause': function() {
-      if (dispatcher.stream) {
-        dispatcher.stream.pause();
-        message.reply('Song paused. Use $resume to resume playback');
-      }
+      return bot.setMessage(message).pauseYoutubeVideo();
     },
     '$resume': function() {
-      if (dispatcher.stream) {
-        dispatcher.stream.resume();
-        message.reply('Resuming playback!');
-      }
+      return bot.setMessage(message).resumeYoutubeVideo();
     },
     '$help': function() {
       const commands = [
@@ -104,32 +62,29 @@ const Commands = ({ bot, ytdl, streamOptions, dispatcher, message }) => {
   };
 };
 
-bot.on('message', message => {
-  const theMatrix  = bot.guilds.get(process.env.MATRIX_GUILD_ID);
-  const conductors = theMatrix.roles.get(process.env.CONDUCTOR_ID).members;
-  const command    = parseCommand(message.content);
-  const channels   = bot.channels;
+const bot = new Bot(client, Youtube);
+
+client.on('message', message => {
+  const guild = client.guilds.get(process.env.GUILD_ID);
+
+  if (!guild.available || message.author.bot) return;
+
+  const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
+  const command    = parseBotCommand(message.content);
+  const channels   = client.channels;
 
   if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
+    message.reply('Ah ah ah... you didn\'t say the magic word!');
     return;
   }
 
-  // TODO: use a generator function to update the command API
-  // instead of instantiating the class on every message event.
-  const commands = Commands({
-    bot,
-    ytdl,
-    streamOptions,
-    dispatcher,
-    message
-  });
+  const commands = commandDict(bot, message);
 
   if (typeof commands[command] === 'function') {
-    commands[command](channels);
+    commands[command]();
   } else if (!commands[command] && command[0] === '$') {
     message.reply('Command not found. Use $help to list available commands.');
   }
-
 });
 
-bot.login(token);
+client.login(process.env.TOKEN);
