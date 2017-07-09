@@ -1,5 +1,5 @@
 const querystring = require('querystring');
-const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core'); // Stream youtube mp3s
 const getYoutubeSearchResults = require('./getYoutubeSearchResults');
 
 module.exports = class Youtube {
@@ -12,8 +12,13 @@ module.exports = class Youtube {
     this.dispatcher = {};
   }
 
+  setDispatcher(dispatcher) {
+    this.dispatcher = dispatcher;
+    return this;
+  }
+
   setVolume(message) {
-    const newLevel = parseFloat(messageContent.split(' ')[1], 10);
+    const newLevel = parseFloat(message.content.split(' ')[1], 10);
     if (newLevel > 1) {
       return message.reply(
         `${ newLevel } is far too loud. 0-1 is a good range.`
@@ -24,22 +29,23 @@ module.exports = class Youtube {
       );
     }
 
-    if (this.dispatcher.stream) {
+    if (this.dispatcher) {
       // Sets the volume relative to the input stream
       // 1 is normal, 0.5 is half, 2 is double.
-      this.dispatcher.stream.setVolume(newLevel);
+      this.dispatcher.setVolume(newLevel);
     }
   }
 
   stopPlayback() {
-    if (this.dispatcher.stream) {
-      this.dispatcher.stream.end();
+    if (this.dispatcher && this.dispatcher.end) {
+      this.dispatcher.end();
+      this.dispatcher = null;
     }
   }
 
   pausePlayback(message) {
-    if (this.dispatcher.stream) {
-      this.dispatcher.stream.pause();
+    if (this.dispatcher && this.dispatcher.pause) {
+      this.dispatcher.pause();
       return message.reply(
         'Song paused. Use $resume to resume playback'
       );
@@ -47,8 +53,8 @@ module.exports = class Youtube {
   }
 
   resumePlayback(message) {
-    if (this.dispatcher.stream) {
-      this.dispatcher.stream.resume();
+    if (this.dispatcher && this.dispatcher.resume) {
+      this.dispatcher.resume();
       message.reply('Resuming playback!');
     }
   }
@@ -84,8 +90,8 @@ module.exports = class Youtube {
     return `https://www.youtube.com/watch?v=${id}`;
   }
 
-  playSong(message, url, updateDispatcher, connection) {
-    console.log(url)
+  playSong(message, url, connection) {
+    this.setDispatcher(null);
     const stream = this.ytdl(url, { filter: 'audioonly' });
     const dispatchConnect = new Promise((resolve, reject) => {
       resolve(connection.playStream(stream, this.streamOptions));
@@ -98,8 +104,15 @@ module.exports = class Youtube {
         console.error(message);
       });
 
+      dispatcher.on('end', message => {
+        console.log('stopped because: ', message);
+      });
+
+      dispatcher.on('debug', info => {
+        console.log('[DEBUG]: ', info);
+      })
       // Update reference to the stream in parent class
-      this.dispatcher = dispatcher;
+      this.setDispatcher(dispatcher);
     });
 
     dispatchConnect.catch(error => {

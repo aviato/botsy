@@ -1,7 +1,3 @@
-const volumeLevel = messageContent => {
-  return parseFloat(messageContent.split(' ')[1], 10);
-};
-
 const parseBotCommand = messageContent => {
   return messageContent.split(' ')[0];
 };
@@ -22,7 +18,6 @@ const anyUndefined = (object, keyNames) => {
 };
 
 module.exports = {
-  volumeLevel,
   parseBotCommand,
   isConductor,
   isUndefined,
