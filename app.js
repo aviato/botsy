@@ -27,26 +27,25 @@ client.on('ready', () => {
 });
 
 // Translate bot commands into method calls
-const commandDict = (bot, message) => {
+const commandDict = (bot) => {
   return {
     '$join': function() {
-      return bot.setMessage(message).joinChannel(client);
+      return bot.joinChannel();
     },
     '$play': function() {
-      return bot.setMessage(message).playYoutubeSong()
+      return bot.playYoutubeSong()
     },
     '$stop': function() {
-      //console.log('here is the... bot instance?', bot.setMessage(message));
-      return bot.setMessage(message).stopYoutubePlayback();
+      return bot.stopYoutubePlayback();
     },
     '$volume': function() {
-      return bot.setMessage(message).setYoutubeVolume();
+      return bot.setYoutubeVolume();
     },
     '$pause': function() {
-      return bot.setMessage(message).pauseYoutubeVideo();
+      return bot.pauseYoutubeVideo();
     },
     '$resume': function() {
-      return bot.setMessage(message).resumeYoutubeVideo();
+      return bot.resumeYoutubeVideo();
     },
     '$help': function() {
       const commands = [
@@ -70,18 +69,18 @@ client.on('message', message => {
   if (!guild.available || message.author.bot) return;
 
   const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
-  const command    = parseBotCommand(message.content);
-  const channels   = client.channels;
-
-  if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
-    message.reply('Ah ah ah... you didn\'t say the magic word!');
-    return;
-  }
-
-  const commands = commandDict(bot, message);
+  const command = parseBotCommand(message.content);
+  const channels = client.channels;
+  const commands = commandDict(bot.setMessage(message));
 
   if (typeof commands[command] === 'function') {
-    commands[command]();
+    // If user has no conductor role 
+    if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
+      message.reply('Ah ah ah... you didn\'t say the magic word!');
+      return;
+    } else {
+      commands[command]();
+    }
   } else if (!commands[command] && command[0] === '$') {
     message.reply('Command not found. Use $help to list available commands.');
   }
