@@ -2,7 +2,12 @@ const querystring = require('querystring');
 const ytdl = require('ytdl-core'); // Stream youtube mp3s
 const getYoutubeSearchResults = require('./getYoutubeSearchResults');
 
+/** Class representing youtube */
 module.exports = class Youtube {
+  /**
+   * Create a youtube class.
+   * @param {string} key - a Youtube API key 
+   */
   constructor(key) {
     this.key = key;
     this.ytdl = ytdl;
@@ -12,21 +17,31 @@ module.exports = class Youtube {
     this.dispatcher = {};
   }
 
+  /**
+   * Sets the dispatcher - an object which represents the stream.
+   * @param {*} dispatcher - the stream or null
+   */
   setDispatcher(dispatcher) {
     this.dispatcher = dispatcher;
     return this;
   }
 
+  /**
+   * Set the volume of the current stream.
+   * @param {string} message - raw message from Discord
+   */
   setVolume(message) {
     const newLevel = parseFloat(message.content.split(' ')[1], 10);
     if (newLevel > 1) {
-      return message.reply(
+      message.reply(
         `${ newLevel } is far too loud. 0-1 is a good range.`
       );
+      return;
     } else if (isNaN(newLevel)) {
-      return message.reply(
+      message.reply(
         `Your volume level wasn't a number. Try again!`
       );
+      return;
     }
 
     if (this.dispatcher) {
@@ -36,6 +51,9 @@ module.exports = class Youtube {
     }
   }
 
+  /**
+   * Stop the current stream.
+   */
   stopPlayback() {
     if (this.dispatcher && this.dispatcher.end) {
       this.dispatcher.end();
@@ -43,15 +61,23 @@ module.exports = class Youtube {
     }
   }
 
+    /**
+     * Pause the current stream's playback.
+     * @param {*} message - raw message from Discord 
+     */
   pausePlayback(message) {
     if (this.dispatcher && this.dispatcher.pause) {
       this.dispatcher.pause();
-      return message.reply(
+      message.reply(
         'Song paused. Use $resume to resume playback'
       );
     }
   }
 
+  /**
+   * Resume playback of a paused stream.
+   * @param {*} message - raw message from Discord
+   */
   resumePlayback(message) {
     if (this.dispatcher && this.dispatcher.resume) {
       this.dispatcher.resume();
@@ -59,6 +85,11 @@ module.exports = class Youtube {
     }
   }
 
+  /**
+   * Get the top search result for a given Youtube search
+   * @param {*} message - raw message from Discord
+   * @return {string} url - the URL of the top search result
+   */
   getSearchResults(message) {
     return getYoutubeSearchResults(
       this.searchUrl,
@@ -67,22 +98,37 @@ module.exports = class Youtube {
     );
   }
 
+  /**
+   * Take a raw discord message a parse a song name from it.
+   * @param {*} message - a raw message from Discord
+   * @return {string} song - the name of the requested song
+   */
   parseSongNameFromMessage(message) {
-    let commandAsArray = message.content.split(' '),
-    songNameSlice = commandAsArray.slice(1),
-    song = songNameSlice.join(' ');
-    return song;
+    const commandAsArray = message.content.split(' ');
+    const songNameSlice = commandAsArray.slice(1);
+    return songNameSlice.join(' ');
   }
 
-  makeSearchUrl(query) {
-    query = this.parseSongNameFromMessage(query)
+  /**
+   * Make a query to send to the Youtube API to get search results. Returns this
+   * to make methods chainable.
+   * @param {*} message - a raw message from Discord
+   * @return {object} this
+   */
+  makeSearchUrl(message) {
+    const query = this.parseSongNameFromMessage(message);
     const baseUri = 'https://www.googleapis.com/youtube/v3/search?part=snippet';
     const apiKey = `key=${this.key}`;
-    const searchTerms = `q=${querystring.escape(query)}`
+    const searchTerms = `q=${querystring.escape(query)}`;
     this.searchUrl = [baseUri, searchTerms, apiKey].join('&');
     return this;
   }
 
+  /**
+   * Make a video url to be requested from Youtube.
+   * @param {string} id - the ID of the mp3 to be streamed
+   * @return {string} videoUrl - the url of the video to be streamed
+   */
   makeVideoUrl(id) {
     if (typeof id !== 'string') {
       console.log('Youtube video ID must be a string.');
@@ -90,6 +136,12 @@ module.exports = class Youtube {
     return `https://www.youtube.com/watch?v=${id}`;
   }
 
+  /**
+   * 
+   * @param {*} message - a raw message from Discord
+   * @param {string} url - the URL of the video to be streamed
+   * @param {*} connection - an open voice connection in Discord
+   */
   playSong(message, url, connection) {
     this.setDispatcher(null);
     const stream = this.ytdl(url, { filter: 'audioonly' });
@@ -116,7 +168,7 @@ module.exports = class Youtube {
     });
 
     dispatchConnect.catch(error => {
-      console.log(error);
+      console.log('[ERROR]: ', error);
     });
   }
 }
