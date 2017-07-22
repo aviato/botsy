@@ -36,10 +36,12 @@ module.exports = class Youtube {
       message.reply(
         `${ newLevel } is far too loud. 0-1 is a good range.`
       );
+      return;
     } else if (isNaN(newLevel)) {
       message.reply(
         `Your volume level wasn't a number. Try again!`
       );
+      return;
     }
 
     if (this.dispatcher) {
