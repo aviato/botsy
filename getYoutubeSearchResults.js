@@ -46,11 +46,11 @@ const getYoutubeSearchResults = (searchUrl, makeVideoUrl, message) => {
           resolve(result);
 
         } catch (e) {
-          console.log('here is the error message!', e.message);
+          console.log('[ERROR]:', e.message);
         }
       });
     }).on('error', e => {
-      console.log(e.message);
+      console.log('[ERROR]: ', e.message);
     })
   });
 }

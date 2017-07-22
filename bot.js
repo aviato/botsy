@@ -64,7 +64,6 @@ module.exports = class Bot {
   }
 
   stopYoutubePlayback() {
-    console.log('calling')
     return this.youtube.stopPlayback();
   }
 }
