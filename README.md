@@ -1,5 +1,8 @@
-# botsy
-A simple discord bot that plays your favorite songs and annoys your friends
+# Botsy
+A simple discord bot that plays your favorite songs and annoys your friends.
+
+## Commands
+`$play [song name]` - plays a song by searching Youtube, grabbing the top result and streaming the audio through Discord.
 
 ## Installation
 Node.js is required to run `botsy`. Install that first if you don't have it.
