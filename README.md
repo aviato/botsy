@@ -6,6 +6,7 @@ A simple discord bot that plays your favorite songs and annoys your friends.
 `$stop` - stops the currently playing song
 `$pause` - pause the currently playing song
 `$resume` - resume the currently playing song
+`$help`  - lists all valid commands
 
 ## Installation
 Node.js is required to run `botsy`. Install that first if you don't have it.
