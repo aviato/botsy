@@ -3,10 +3,17 @@ A simple discord bot that plays your favorite songs and annoys your friends.
 
 ## Commands
 `$play [song name]` - plays a song by searching Youtube, grabbing the top result and streaming the audio through Discord.
+
 `$stop` - stops the currently playing song
+
 `$pause` - pause the currently playing song
+
 `$resume` - resume the currently playing song
+
 `$help`  - lists all valid commands
+
+## Contributing
+Just email me if you have any questions :-)
 
 ## Installation
 Node.js is required to run `botsy`. Install that first if you don't have it.
