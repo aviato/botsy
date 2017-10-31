@@ -6,6 +6,8 @@ A simple discord bot that plays your favorite songs and annoys your friends.
 
 `$stop` - stops the currently playing song
 
+`volume [level]` - sets the volume level
+
 `$pause` - pause the currently playing song
 
 `$resume` - resume the currently playing song
