@@ -2,23 +2,23 @@ require('dotenv').load(); // Load env vars
 const https = require('https');
 const Discord = require('discord.js'); // Discord API
 const client = new Discord.Client();  // Sets up client discord client API
-const Youtube = require('./youtube');
+const Youtube = require('./src/youtube');
 const hostname = 'localhost';
 const port = 9999;
-const Bot = require('./bot');
+const Bot = require('./src/bot');
 const { parseBotCommand,
         isConductor,
-        formatHelpMessage }  = require('./helpers');
+        formatHelpMessage }  = require('./src/helpers');
 
 // Basic web server
-const server = https.createServer( ( req, res ) => {
+const server = https.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
   res.end('Hello World \n');
 });
 
 // Log when a connection is made
-server.listen( port, hostname, () => {
+server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
@@ -27,27 +27,27 @@ client.on('ready', () => {
 });
 
 // Translate bot commands into method calls
-const commandDict = (bot) => {
+const commandDict = bot => {
   return {
-    '$join': function() {
+    '$join': () => {
       return bot.joinChannel();
     },
-    '$play': function() {
+    '$play': () => {
       return bot.playYoutubeSong()
     },
-    '$stop': function() {
+    '$stop': () => {
       return bot.stopYoutubePlayback();
     },
-    '$volume': function() {
+    '$volume': () => {
       return bot.setYoutubeVolume();
     },
-    '$pause': function() {
+    '$pause': () => {
       return bot.pauseYoutubeVideo();
     },
-    '$resume': function() {
+    '$resume': () => {
       return bot.resumeYoutubeVideo();
     },
-    '$help': function() {
+    '$help': () => {
       const commands = [
         '$play [songname] | play a song or video (audio only)',
         '$stop | stops playback of the current song',
