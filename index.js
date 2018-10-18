@@ -30,32 +30,20 @@ client.on('ready', () => {
 // Translate bot commands into method calls
 const commandDict = bot => {
   return {
-    '$join': () => {
-      return bot.joinChannel();
-    },
-    '$play': () => {
-      return bot.playYoutubeSong()
-    },
-    '$stop': () => {
-      return bot.stopYoutubePlayback();
-    },
-    '$volume': () => {
-      return bot.setYoutubeVolume();
-    },
-    '$pause': () => {
-      return bot.pauseYoutubeVideo();
-    },
-    '$resume': () => {
-      return bot.resumeYoutubeVideo();
-    },
+    '$join': () => bot.joinChannel(),
+    '$play': () => bot.playYoutubeSong(),
+    '$stop': () => bot.stopYoutubePlayback(),
+    '$volume': () => bot.setYoutubeVolume(),
+    '$pause': () => bot.pauseYoutubeVideo(),
+    '$resume': () => bot.resumeYoutubeVideo(),
     '$help': () => {
       const commands = [
-        '$play [songname] | play a song or video (audio only)',
-        '$stop | stops playback of the current song',
-        '$pause | pauses playback of the current song',
-        '$resume | resumes playback of the current song',
-        '$join [channelname] | join the specified channel (be sure to check your spelling - damn lazy programmer...)',
-        '$volume [volumelevel - ex. 1 (full volume), ex. .5 (half volume)] | sets the volume of the current song'
+        '$play <songname>       Play a song or video on Youtube (audio only)',
+        '$stop                  Stop playback',
+        '$pause                 Pause playback',
+        '$resume                Resume playback',
+        '$join <channelname>    Join the specified channel (be sure to check your spelling and punctuation)',
+        '$volume <volume level> Set volume (ex: 1 [max], .5 [half])'
       ]
       bot.message.reply(BotHelpers.formatHelpMessage(commands));
     }
