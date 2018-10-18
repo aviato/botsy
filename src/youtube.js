@@ -11,6 +11,7 @@ module.exports = class Youtube {
   constructor(key) {
     this.key = key;
     this.ytdl = ytdl;
+    this.streamOptions = { seek: 0, volume: .05 };
     this.searchUrl = null;
     this.videoUrl = null;
     this.dispatcher = {};
