@@ -169,7 +169,7 @@ module.exports = class Youtube {
       });
 
       dispatcher.on('speaking', speaking => {
-        console.log(`User is ${ speaking ? '' : 'not' } speaking.`);
+        console.log(`User is speaking? ${speaking}`);
       })
     });
 
