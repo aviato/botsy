@@ -5,15 +5,17 @@
   "main": "app.js",
   "dependencies": {
     "discord": "^0.8.2",
-    "discord.js": "^11.0.0",
+    "discord.js": "^11.4.2",
     "dotenv": "^4.0.0",
     "envs": "^0.1.6",
-    "opusscript": "0.0.1",
-    "ytdl-core": "^0.7.21"
+    "opusscript": "^0.0.6",
+    "ytdl-core": "^0.26.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^3.5.3"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "Ryan S. Price",
   "license": "ISC"

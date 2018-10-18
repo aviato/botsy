@@ -11,7 +11,7 @@ module.exports = class Youtube {
   constructor(key) {
     this.key = key;
     this.ytdl = ytdl;
-    this.streamOptions = { seek: 0, volume: .07 };
+    this.streamOptions = { seek: 0, volume: .05 };
     this.searchUrl = null;
     this.videoUrl = null;
     this.dispatcher = {};
@@ -151,20 +151,26 @@ module.exports = class Youtube {
     });
 
     dispatchConnect.then(dispatcher => {
+      // Update reference to the stream in parent class
+      this.setDispatcher(dispatcher);
+
       // Log any funky errors that are thrown while streaming
       dispatcher.on('debug', message => {
         console.error(message);
       });
 
       dispatcher.on('end', message => {
-        console.log('stopped because: ', message);
+        this.stopPlayback();
+        console.log('[END]: stopped because: ', message);
       });
 
       dispatcher.on('debug', info => {
         console.log('[DEBUG]: ', info);
+      });
+
+      dispatcher.on('speaking', speaking => {
+        console.log(`User is ${ speaking ? '' : 'not' } speaking.`);
       })
-      // Update reference to the stream in parent class
-      this.setDispatcher(dispatcher);
     });
 
     dispatchConnect.catch(error => {
