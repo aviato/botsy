@@ -9,6 +9,7 @@ const Bot = require('./src/bot');
 const { parseBotCommand,
         isConductor,
         formatHelpMessage }  = require('./src/helpers');
+const BotHelpers = require('./src/BotHelpers');
 
 // Basic web server
 const server = https.createServer((req, res) => {
@@ -56,7 +57,7 @@ const commandDict = bot => {
         '$join [channelname] | join the specified channel (be sure to check your spelling - damn lazy programmer...)',
         '$volume [volumelevel - ex. 1 (full volume), ex. .5 (half volume)] | sets the volume of the current song'
       ]
-      message.reply(formatHelpMessage(commands));
+      bot.message.reply(BotHelpers.formatHelpMessage(commands));
     }
   };
 };
