@@ -9,7 +9,7 @@ const Bot = require('./src/bot');
 const { parseBotCommand,
         isConductor,
         formatHelpMessage }  = require('./src/helpers');
-const BotHelpers = require('./src/BotHelpers');
+const BotHelpers = require('./src/botHelpers');
 
 // Basic web server
 const server = https.createServer((req, res) => {
