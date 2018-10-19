@@ -31,11 +31,11 @@ client.on('ready', () => {
 const commandDict = bot => {
   return {
     '$join': () => bot.joinChannel(),
-    '$play': () => bot.playYoutubeSong(),
-    '$stop': () => bot.stopYoutubePlayback(),
-    '$volume': () => bot.setYoutubeVolume(),
-    '$pause': () => bot.pauseYoutubeVideo(),
-    '$resume': () => bot.resumeYoutubeVideo(),
+    '$play': () => bot.play(),
+    '$stop': () => bot.stop(),
+    '$volume': () => bot.setVolume(),
+    '$pause': () => bot.pause(),
+    '$resume': () => bot.resume(),
     '$help': () => {
       const commands = [
         '$play <songname>       Play a song or video on Youtube (audio only)',

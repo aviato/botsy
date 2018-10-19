@@ -11,78 +11,8 @@ module.exports = class Youtube {
   constructor(key) {
     this.key = key;
     this.ytdl = ytdl;
-    this.streamOptions = { seek: 0, volume: .05 };
     this.searchUrl = null;
     this.videoUrl = null;
-    this.dispatcher = {};
-  }
-
-  /**
-   * Sets the dispatcher - an object which represents the stream.
-   * @param {*} dispatcher - the stream or null
-   */
-  setDispatcher(dispatcher) {
-    this.dispatcher = dispatcher;
-    return this;
-  }
-
-  /**
-   * Set the volume of the current stream.
-   * @param {string} message - raw message from Discord
-   */
-  setVolume(message) {
-    const newLevel = parseFloat(message.content.split(' ')[1], 10);
-    if (newLevel > 1) {
-      message.reply(
-        `${ newLevel } is far too loud. 0-1 is a good range.`
-      );
-      return;
-    } else if (isNaN(newLevel)) {
-      message.reply(
-        `Your volume level wasn't a number. Try again!`
-      );
-      return;
-    }
-
-    if (this.dispatcher) {
-      // Sets the volume relative to the input stream
-      // 1 is normal, 0.5 is half, 2 is double.
-      this.dispatcher.setVolume(newLevel);
-    }
-  }
-
-  /**
-   * Stop the current stream.
-   */
-  stopPlayback() {
-    if (this.dispatcher && this.dispatcher.end) {
-      this.dispatcher.end();
-      this.dispatcher = null;
-    }
-  }
-
-    /**
-     * Pause the current stream's playback.
-     * @param {*} message - raw message from Discord 
-     */
-  pausePlayback(message) {
-    if (this.dispatcher && this.dispatcher.pause) {
-      this.dispatcher.pause();
-      message.reply(
-        'Song paused. Use $resume to resume playback'
-      );
-    }
-  }
-
-  /**
-   * Resume playback of a paused stream.
-   * @param {*} message - raw message from Discord
-   */
-  resumePlayback(message) {
-    if (this.dispatcher && this.dispatcher.resume) {
-      this.dispatcher.resume();
-      message.reply('Resuming playback!');
-    }
   }
 
   /**
@@ -136,45 +66,8 @@ module.exports = class Youtube {
     return `https://www.youtube.com/watch?v=${id}`;
   }
 
-  /**
-   * 
-   * @param {*} message - a raw message from Discord
-   * @param {string} url - the URL of the video to be streamed
-   * @param {*} connection - an open voice connection in Discord
-   */
-  playSong(message, url, connection) {
-    this.setDispatcher(null);
-    const stream = this.ytdl(url, { filter: 'audioonly' });
-    const dispatchConnect = new Promise((resolve, reject) => {
-      resolve(connection.playStream(stream, this.streamOptions));
-      reject('oops this does not work'); // This might break things
-    });
-
-    dispatchConnect.then(dispatcher => {
-      // Update reference to the stream in parent class
-      this.setDispatcher(dispatcher);
-
-      // Log any funky errors that are thrown while streaming
-      dispatcher.on('debug', message => {
-        console.error(message);
-      });
-
-      dispatcher.on('end', message => {
-        this.stopPlayback();
-        console.log('[END]: stopped because: ', message);
-      });
-
-      dispatcher.on('debug', info => {
-        console.log('[DEBUG]: ', info);
-      });
-
-      dispatcher.on('speaking', speaking => {
-        console.log(`User is speaking? ${speaking}`);
-      })
-    });
-
-    dispatchConnect.catch(error => {
-      console.log('[ERROR]: ', error);
-    });
+  createAudioStream(url) {
+    return this.ytdl(url, { filter: 'audioonly' });
   }
+
 }

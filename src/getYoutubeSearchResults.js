@@ -17,6 +17,7 @@ const getYoutubeSearchResults = (searchUrl, makeVideoUrl, message) => {
       }
 
       if (error) {
+        console.log('this error')
         console.log(error.message);
         // consume response data to free up memory
         res.resume();
@@ -35,6 +36,8 @@ const getYoutubeSearchResults = (searchUrl, makeVideoUrl, message) => {
           const firstSearchResult = parsedData.items.find(item => {
             return item.id.videoId;
           });
+
+          // Make result an object that holds video title, url, etc.
 
           const result = makeVideoUrl(
             firstSearchResult.id.videoId
