@@ -1,4 +1,5 @@
 const BotHelpers = require('./botHelpers');
+const Queue = require('./Queue');
 
 /** Class representing a bot */
 module.exports = class Bot {
@@ -15,6 +16,9 @@ module.exports = class Bot {
     this.youtube = new Youtube(
       process.env.YOUTUBE_API_KEY
     );
+    this.queue = new Queue();
+    this.autoPlay = false;
+    this.speaking = false;
   }
 
   /**
@@ -23,6 +27,7 @@ module.exports = class Bot {
    */
   setDispatcher(dispatcher) {
     this.dispatcher = dispatcher;
+    this.speaking = true;
     return this;
   }
 
@@ -67,17 +72,51 @@ module.exports = class Bot {
     return this;
   }
 
+  addSong() {
+    this.getYoutubeSearchResults().then(url => {
+      this.queue.add(url);
+      if (!this.speaking) {
+        this.playNext();
+      }
+    });
+  }
+
+  toggleAutoPlay() {
+    this.autoPlay = !this.autoPlay;
+
+    if (this.autoPlay) {
+      this.playNext();
+    } else {
+      this.stop();
+    }
+  }
+
   /**
    * Stream a Youtube mp3 through an open voice connection.
    */
-  play() {
+  play(nextSongUrl) {
     const channel = this.client.channels.get(this.message.member.voiceChannelID);
 
+    console.log('a');
+
     channel.join().then(connection => {
-      return this.getYoutubeSearchResults().then(url => {
-        this.playYoutubeSong(url, connection)
-      });
+      console.log('b');
+      if (nextSongUrl) {
+        this.playYoutubeSong(nextSongUrl, connection)
+      } else {
+        return this.getYoutubeSearchResults().then(url => {
+          this.playYoutubeSong(url, connection)
+        });
+      }
     });
+  }
+
+  playNext() {
+    if (this.queue.songs.length) {
+      this.play(this.queue.dequeue());
+    } else {
+      this.message.reply('There are no songs in the queue! Use $add <songname> to add a song to the queue.');
+    }
   }
 
   playYoutubeSong(url, connection) {
@@ -98,7 +137,12 @@ module.exports = class Bot {
       });
 
       dispatcher.on('end', endMessage => {
-        this.stop();
+        this.dispatcher.end();
+        this.speaking = false;
+
+        if (this.autoPlay) {
+          this.playNext();
+        }
         console.log('[END]: stopped because: ', endMessage);
       });
 
@@ -108,7 +152,7 @@ module.exports = class Bot {
 
       dispatcher.on('speaking', speaking => {
         console.log(`User is speaking? ${speaking}`);
-      })
+      });
     });
 
     dispatchConnect.catch(error => {
@@ -159,6 +203,7 @@ module.exports = class Bot {
    * Stop the current stream.
    */
   stop() {
+    this.autoPlay = false;
     if (this.dispatcher && this.dispatcher.end) {
       this.dispatcher.end();
       this.dispatcher = null;

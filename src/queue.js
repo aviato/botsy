@@ -1,49 +1,19 @@
-class Queue {
+module.exports = class Queue {
   constructor(capacity) {
-    this._capacity = capacity || Infinity;
-    this._storage = {};
-    this._head = 0;
-    this._tail = 0;
+    this.songs = [];
+    this.shufflePlay = false;
   }
 
-  enqueue(value) {
-    if (this.count() < this.capacity) {
-      this._storage[this._tail++] = value;
-      return this.count();
-    }
-
-    return 'Queue is at max capacity. An element must be removed before another is added.';
+  add(song) {
+    this.songs.push(song);
   }
 
   dequeue() {
-    const element = this._storage[this._head];
-
-    delete this._storage[this._head];
-
-    if (this._head < this._tail) {
-      this._head++;
-    }
-
-    return element;
+    return this.songs.shift();
   }
 
-  peek() {
-    return this._storage[this._head];
+  list() {
+    return this.songs.map((song, index) => `${index + 1}). ${song}`);
   }
 
-  count() {
-    return this._tail - this._head;
-  }
-
-  contains(value) {
-    for (let i = this._head; i < this._tail; i++) {
-      if (this._storage[i] === value) {
-        return i - this._head + 1;
-      }
-    }
-
-    return null;
-  }
 }
-
-export default Queue;

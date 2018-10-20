@@ -30,6 +30,11 @@ client.on('ready', () => {
 // Translate bot commands into method calls
 const commandDict = bot => {
   return {
+    '$add': () => bot.addSong(), // add song to the back of the queue
+    '$skip': () => bot.skipSong(), // stop playing the currently playing and play next song
+    '$showQueue': () => bot.showQueue(), // display queue
+    '$shuffle': () => bot.toggleShuffleMode(), // toggles shuffle mode
+    '$autoplay': () => bot.toggleAutoPlay(),
     '$join': () => bot.joinChannel(),
     '$play': () => bot.play(),
     '$stop': () => bot.stop(),
