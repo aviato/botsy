@@ -1,6 +1,6 @@
 const https = require('https');
 
-const getYoutubeSearchResults = (searchUrl, makeVideoUrl, message) => {
+const getYoutubeSearchResults = (searchUrl, makeVideoUrl) => {
   return new Promise((resolve, reject) => {
     https.get(searchUrl, res => {
       const statusCode  = res.statusCode;
@@ -32,18 +32,20 @@ const getYoutubeSearchResults = (searchUrl, makeVideoUrl, message) => {
         try {
           let parsedData = JSON.parse(rawData);
 
-          const firstSearchResult = parsedData.items.find(item => {
-            return item.id.videoId;
+          const firstVideoSearchResult = parsedData.items.find(item => {
+            return item.id.kind === 'youtube#video' && item.id.videoId;
           });
 
-          const result = makeVideoUrl(
-            firstSearchResult.id.videoId
-          );
+          const song = {
+            ytid: firstVideoSearchResult.id.videoId,
+            name: firstVideoSearchResult.snippet.title,
+            url: makeVideoUrl(
+              firstVideoSearchResult.id.videoId
+            ),
+            plays: 1
+          }
 
-          message.reply(result);    
-
-          // resolve promise with the video URL
-          resolve(result);
+          resolve(song);
 
         } catch (e) {
           console.log('[ERROR]:', e.message);
