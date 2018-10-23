@@ -1,5 +1,6 @@
 const BotHelpers = require('./botHelpers');
 const Queue = require('./Queue');
+const MongoClient = require('mongodb').MongoClient;
 
 /** Class representing a bot */
 module.exports = class Bot {
@@ -18,7 +19,17 @@ module.exports = class Bot {
     );
     this.queue = new Queue();
     this.autoPlay = false;
-    this.speaking = false;
+    this.shufflePlay = false;
+
+    if (process.env.MONGODB_ADDRESS) {
+      const dbClient = new MongoClient(process.env.MONGODB_ADDRESS);
+
+      dbClient.connect(err => {
+        const db = dbClient.db('botsy');
+        this._songs = db.collection('songs');
+        console.log('Successfully connected to db!');
+      });
+    }
   }
 
   /**
@@ -27,7 +38,6 @@ module.exports = class Bot {
    */
   setDispatcher(dispatcher) {
     this.dispatcher = dispatcher;
-    this.speaking = true;
     return this;
   }
 
@@ -59,7 +69,7 @@ module.exports = class Bot {
     */
   getYoutubeSearchResults() {
     return this.youtube.makeSearchUrl(this.message)
-                       .getSearchResults(this.message);
+                       .getSearchResults();
   }
 
   /**
@@ -73,39 +83,61 @@ module.exports = class Bot {
   }
 
   addSong() {
-    this.getYoutubeSearchResults().then(url => {
-      this.queue.add(url);
-      if (!this.speaking) {
-        this.playNext();
-      }
+    this.getYoutubeSearchResults().then(song => {
+      this.queue.add(song);
+      this.listSongsInQueue();
     });
+  }
+
+  skipSong() {
+    this.playNext();
+  }
+
+  listSongsInQueue() {
+    if (this.queue.songs.length) {
+      this.message.reply(
+`
+Here are the songs currently in queue:
+${this.queue.showList().join('\n')}
+`);
+    } else {
+      this.message.reply('The queue is currently empty. Try using $add to add songs to the queue.');
+    }
   }
 
   toggleAutoPlay() {
     this.autoPlay = !this.autoPlay;
 
     if (this.autoPlay) {
+      this.message.reply('Autoplay enabled.')
       this.playNext();
     } else {
+      this.message.reply('Autoplay disabled.');
       this.stop();
     }
+  }
+
+  toggleShufflePlay() {
+    this.shufflePlay = !this.shufflePlay;
+    const shufflePlayStatus = this.shufflePlay ? 'enabled' : 'disabled';
+    this.message.reply('Shuffle play ' + shufflePlayStatus);
   }
 
   /**
    * Stream a Youtube mp3 through an open voice connection.
    */
-  play(nextSongUrl) {
+  play(nextSong) {
     const channel = this.client.channels.get(this.message.member.voiceChannelID);
 
-    console.log('a');
-
     channel.join().then(connection => {
-      console.log('b');
-      if (nextSongUrl) {
-        this.playYoutubeSong(nextSongUrl, connection)
+
+      if (nextSong && nextSong.url) {
+        this.message.reply(nextSong.url);
+        this.playYoutubeSong(nextSong, connection);
       } else {
-        return this.getYoutubeSearchResults().then(url => {
-          this.playYoutubeSong(url, connection)
+        return this.getYoutubeSearchResults().then(song => {
+          this.message.reply(song.url);
+          this.playYoutubeSong(song, connection)
         });
       }
     });
@@ -113,14 +145,32 @@ module.exports = class Bot {
 
   playNext() {
     if (this.queue.songs.length) {
-      this.play(this.queue.dequeue());
+      console.log(this.queue.songs);
+      this.play(this.queue.dequeue(this.shufflePlay));
     } else {
       this.message.reply('There are no songs in the queue! Use $add <songname> to add a song to the queue.');
     }
   }
 
-  playYoutubeSong(url, connection) {
-    const stream = this.youtube.createAudioStream(url);
+  addOrUpdateSongInDB(song) {
+    if (!this._songs) {
+      console.log('DB has not been set up. Song tracking is not enabled.');
+      return;
+    }
+
+    this._songs.findOne({ ytid: song.ytid }, (err, doc) => {
+      if (doc) {
+        this._songs.updateOne({ ytid: song.ytid }, { $inc: { plays: 1 }});
+      } else {
+        this._songs.insertOne(song);
+      }
+    });
+
+  }
+
+  playYoutubeSong(song, connection) {
+    this.addOrUpdateSongInDB(song);
+    const stream = this.youtube.createAudioStream(song.url);
 
     const dispatchConnect = new Promise((resolve, reject) => {
       resolve(connection.playStream(stream, this.streamOptions));
@@ -137,12 +187,15 @@ module.exports = class Bot {
       });
 
       dispatcher.on('end', endMessage => {
-        this.dispatcher.end();
-        this.speaking = false;
+        // This event will fire asynchronously, which causes a bug when skipping songs in autoplay mode.
+        // The work around for this is to set a timeout to insure that the event won't fire for a dispatcher
+        // that should be replaced.
+        setTimeout(() => {
+          if (this.autoPlay && dispatcher === this.dispatcher) {
+            this.playNext();
+          }
+        }, 0);
 
-        if (this.autoPlay) {
-          this.playNext();
-        }
         console.log('[END]: stopped because: ', endMessage);
       });
 
@@ -185,7 +238,7 @@ module.exports = class Bot {
   pause() {
     if (this.dispatcher && this.dispatcher.pause) {
       this.dispatcher.pause();
-      this.message.reply('Song paused. Use $resume to resume playback');
+      this.message.reply('Song paused. Use $resume to resume playback.');
     }
   }
 
@@ -208,5 +261,37 @@ module.exports = class Bot {
       this.dispatcher.end();
       this.dispatcher = null;
     }
+  }
+
+  displayMostPlayedSongs() {
+    if (this._songs === null) {
+      this.message.reply('DB setup is required to track most played songs.');
+      return;
+    }
+
+    const includeURL = this.message.content.split(' ')[1];
+
+    this._songs.find({}).toArray((err, docs) => {
+      if (docs) {
+        const sanitizedDocs = docs.sort((a, b) => b.plays - a.plays)
+              .slice(0, 10)
+              .filter(doc => doc !== undefined )
+              .map((doc, i) => {
+                let listItem = `${i+1}). ${doc.name} (${doc.plays} plays)`;
+
+                if (includeURL === 'true') {
+                  listItem = listItem + ` [${doc.url}]`;
+                }
+
+                return listItem;
+              });
+        this.message.reply(
+`
+The most played songs are:
+${ sanitizedDocs.join('\n') }
+`
+        );
+      }
+    });
   }
 }

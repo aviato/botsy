@@ -23,8 +23,7 @@ module.exports = class Youtube {
   getSearchResults(message) {
     return getYoutubeSearchResults(
       this.searchUrl,
-      this.makeVideoUrl.bind(this),
-      message
+      this.makeVideoUrl
     );
   }
 

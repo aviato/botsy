@@ -2,3 +2,4 @@ TOKEN           = token
 YOUTUBE_API_KEY = key
 CONDUCTOR_ID    = super_secret_id
 GUILD_ID        = super_secret_guild_id
+MONGODB_ADDRESS = mongodb://127.0.0.1:PORT

@@ -8,12 +8,17 @@ module.exports = class Queue {
     this.songs.push(song);
   }
 
-  dequeue() {
-    return this.songs.shift();
+  dequeue(random) {
+    if (random) {
+      const randomIndex = Math.floor(Math.random() * this.songs.length);
+      return this.songs.splice(randomIndex, 1)[0];
+    } else {
+      return this.songs.shift();
+    }
   }
 
-  list() {
-    return this.songs.map((song, index) => `${index + 1}). ${song}`);
+  showList() {
+    return this.songs.map((song, index) => `${index + 1}). ${song.name}`);
   }
 
 }

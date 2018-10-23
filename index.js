@@ -32,8 +32,8 @@ const commandDict = bot => {
   return {
     '$add': () => bot.addSong(), // add song to the back of the queue
     '$skip': () => bot.skipSong(), // stop playing the currently playing and play next song
-    '$showQueue': () => bot.showQueue(), // display queue
-    '$shuffle': () => bot.toggleShuffleMode(), // toggles shuffle mode
+    '$showqueue': () => bot.listSongsInQueue(), // display queue
+    '$shuffle': () => bot.toggleShufflePlay(), // toggles shuffle mode
     '$autoplay': () => bot.toggleAutoPlay(),
     '$join': () => bot.joinChannel(),
     '$play': () => bot.play(),
@@ -41,14 +41,21 @@ const commandDict = bot => {
     '$volume': () => bot.setVolume(),
     '$pause': () => bot.pause(),
     '$resume': () => bot.resume(),
+    '$mostplayed': () => bot.displayMostPlayedSongs(),
     '$help': () => {
       const commands = [
-        '$play <songname>       Play a song or video on Youtube (audio only)',
-        '$stop                  Stop playback',
-        '$pause                 Pause playback',
-        '$resume                Resume playback',
-        '$join <channelname>    Join the specified channel (be sure to check your spelling and punctuation)',
-        '$volume <volume level> Set volume (ex: 1 [max], .5 [half])'
+        '$play <song name> - Play a song or video on Youtube (audio only)',
+        '$stop - Stop playback',
+        '$pause - Pause playback',
+        '$resume - Resume playback',
+        '$join <channel name> - Join the specified channel (be sure to check your spelling and punctuation)',
+        '$volume <volume level> - Set volume (ex: 1 [max], .5 [half])',
+        '$add <song name> - Add a song to the song queue',
+        '$autoplay - Automatically plays the songs in the song queue.',
+        '$skip - Skip the current playing song in the queue',
+        '$showqueue - Show all of the songs in queue',
+        '$shuffle - Enable shuffle play - songs in the queue will play in a random order',
+        '$mostplayed <show url> - Lists the most played songs. Add the "true" flag to show urls. (ex: $mostplayed true)'
       ]
       bot.message.reply(BotHelpers.formatHelpMessage(commands));
     }
@@ -81,3 +88,5 @@ client.on('message', message => {
 });
 
 client.login(process.env.TOKEN);
+
+                     
