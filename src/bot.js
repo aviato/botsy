@@ -1,5 +1,5 @@
 const BotHelpers = require('./botHelpers');
-const Queue = require('./Queue');
+const Queue = require('./queue');
 const MongoClient = require('mongodb').MongoClient;
 
 /** Class representing a bot */
