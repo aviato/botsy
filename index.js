@@ -30,32 +30,32 @@ client.on('ready', () => {
 // Translate bot commands into method calls
 const commandDict = bot => {
   return {
-    '$join': () => {
-      return bot.joinChannel();
-    },
-    '$play': () => {
-      return bot.playYoutubeSong()
-    },
-    '$stop': () => {
-      return bot.stopYoutubePlayback();
-    },
-    '$volume': () => {
-      return bot.setYoutubeVolume();
-    },
-    '$pause': () => {
-      return bot.pauseYoutubeVideo();
-    },
-    '$resume': () => {
-      return bot.resumeYoutubeVideo();
-    },
+    '$add': () => bot.addSong(), // add song to the back of the queue
+    '$skip': () => bot.skipSong(), // stop playing the currently playing and play next song
+    '$showqueue': () => bot.listSongsInQueue(), // display queue
+    '$shuffle': () => bot.toggleShufflePlay(), // toggles shuffle mode
+    '$autoplay': () => bot.toggleAutoPlay(),
+    '$join': () => bot.joinChannel(),
+    '$play': () => bot.play(),
+    '$stop': () => bot.stop(),
+    '$volume': () => bot.setVolume(),
+    '$pause': () => bot.pause(),
+    '$resume': () => bot.resume(),
+    '$mostplayed': () => bot.displayMostPlayedSongs(),
     '$help': () => {
       const commands = [
-        '$play [songname] | play a song or video (audio only)',
-        '$stop | stops playback of the current song',
-        '$pause | pauses playback of the current song',
-        '$resume | resumes playback of the current song',
-        '$join [channelname] | join the specified channel (be sure to check your spelling - damn lazy programmer...)',
-        '$volume [volumelevel - ex. 1 (full volume), ex. .5 (half volume)] | sets the volume of the current song'
+        '$play <song name> - Play a song or video on Youtube (audio only)',
+        '$stop - Stop playback',
+        '$pause - Pause playback',
+        '$resume - Resume playback',
+        '$join <channel name> - Join the specified channel (be sure to check your spelling and punctuation)',
+        '$volume <volume level> - Set volume (ex: 1 [max], .5 [half])',
+        '$add <song name> - Add a song to the song queue',
+        '$autoplay - Automatically plays the songs in the song queue.',
+        '$skip - Skip the current playing song in the queue',
+        '$showqueue - Show all of the songs in queue',
+        '$shuffle - Enable shuffle play - songs in the queue will play in a random order',
+        '$mostplayed <show url> - Lists the most played songs. Add the "true" flag to show urls. (ex: $mostplayed true)'
       ]
       bot.message.reply(BotHelpers.formatHelpMessage(commands));
     }
@@ -88,3 +88,5 @@ client.on('message', message => {
 });
 
 client.login(process.env.TOKEN);
+
+                     
