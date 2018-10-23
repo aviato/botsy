@@ -2,23 +2,26 @@
 A simple discord bot that plays your favorite songs and annoys your friends.
 
 ## Commands
-`$play [song name]` - plays a song by searching Youtube, grabbing the top result and streaming the audio through Discord.
-
-`$stop` - stops the currently playing song
-
-`volume [level]` - sets the volume level
-
-`$pause` - pause the currently playing song
-
-`$resume` - resume the currently playing song
-
-`$help`  - lists all valid commands
+```
+$play <song name> - Play a song or video on Youtube (audio only)
+$stop - Stop playback
+$pause - Pause playback
+$resume - Resume playback
+$join <channel name> - Join the specified channel (be sure to check your spelling and punctuation)
+$volume <volume level> - Set volume (ex: 1 [max], .5 [half])
+$add <song name> - Add a song to the song queue
+$autoplay - Automatically plays the songs in the song queue.
+$skip - Skip the current playing song in the queue
+$showqueue - Show all of the songs in queue
+$shuffle - Enable shuffle play - songs in the queue will play in a random order
+$mostplayed <show url> - Lists the most played songs. Add the "true" flag to show urls. (ex: $mostplayed true)
+```
 
 ## Contributing
 Just email me if you have any questions :-)
 
 ## Installation
-Node.js is required to run `botsy`. Install that first if you don't have it.
+Node.js is required to run `botsy`. Install that first if you don't have it. If you want to track stats on songs you'll need mongodb.
 
 Mac OSX
 * `git clone` this repo
@@ -31,6 +34,7 @@ Linux
 * `git clone` this repo
 * sudo apt-get install ffmpeg
 * `npm install`
+* install `mongodb` (if you want to track stats on songs)
 * Create a `.env` file and fill in the details
 * `forever start app.js`
 
