@@ -44,11 +44,11 @@ const commandDict = bot => {
     '$mostplayed': () => bot.displayMostPlayedSongs(),
     '$help': () => {
       const commands = [
-        '$play <song name> - Play a song or video on Youtube (audio only)',
+        '$play <song name> - Streams the top search result from Youtube (ex: $play who let the dogs out).',
         '$stop - Stop playback',
         '$pause - Pause playback',
         '$resume - Resume playback',
-        '$join <channel name> - Join the specified channel (be sure to check your spelling and punctuation)',
+        '$join <channel name> - Join the specified channel (ex: $join General) [spelling and punctuation matter]',
         '$volume <volume level> - Set volume to specified level (1-100). Prints volume if no level is specified.',
         '$add <song name> - Add a song to the song queue',
         '$autoplay - Automatically plays the songs in the song queue.',
