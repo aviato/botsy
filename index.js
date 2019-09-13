@@ -49,7 +49,7 @@ const commandDict = bot => {
         '$pause - Pause playback',
         '$resume - Resume playback',
         '$join <channel name> - Join the specified channel (be sure to check your spelling and punctuation)',
-        '$volume <volume level> - Set volume (ex: 1 [max], .5 [half])',
+        '$volume <volume level> - Set volume to specified level (1-100). Prints volume if no level is specified.',
         '$add <song name> - Add a song to the song queue',
         '$autoplay - Automatically plays the songs in the song queue.',
         '$skip - Skip the current playing song in the queue',

@@ -13,13 +13,15 @@ module.exports = class Bot {
     this.client = client;
     this.dispatcher = null;
     this.message = null;
-    this.streamOptions = { seek: 0, volume: 0.1 };
+    this.volume = .20;
+    this.streamOptions = { seek: 0, volume: this.volume };
     this.youtube = new Youtube(
       process.env.YOUTUBE_API_KEY
     );
     this.queue = new Queue();
     this.autoPlay = false;
     this.shufflePlay = false;
+
 
     if (process.env.MONGODB_ADDRESS) {
       const dbClient = new MongoClient(process.env.MONGODB_ADDRESS);
@@ -45,20 +47,31 @@ module.exports = class Bot {
    * Set the volume of the current stream.
    */
   setVolume() {
-    const newLevel = parseFloat(this.message.content.split(' ')[1], 10);
+    let rawSoundLevel = parseInt(this.message.content.split(' ')[1], 10);
 
-    if (newLevel > 1) {
-      this.message.reply(`${ newLevel } is far too loud. 0-1 is a good range.`);
-      return;
-    } else if (isNaN(newLevel)) {
-      this.message.reply(`Your volume level wasn't a number. Try again!`);
-      return;
+    if (isNaN(rawSoundLevel)) {
+      return this.message.reply(`Volume level: ${this.volume * 100}.`);
     }
+
+    if (rawSoundLevel > 100) {
+      return this.message.reply('Cannot exceed maximum volume level (100).');
+    } else if (rawSoundLevel < 0) {
+      return this.message.reply('Cannot set volume below minimum volume threshold (0).');
+    } 
+
+    const normalizedSoundLevel = rawSoundLevel / 100;
+
+    if (normalizedSoundLevel > this.volume) {
+      this.message.reply(`Turning volume up to ${normalizedSoundLevel * 100}.`);
+    } else if (normalizedSoundLevel < this.volume) {
+      this.message.reply(`Turning volume down to ${normalizedSoundLevel * 100}.`);
+    }
+
+    this.volume = normalizedSoundLevel;
 
     if (this.dispatcher) {
       // Sets the volume relative to the input stream
-      // 1 is normal, 0.5 is half, 2 is double.
-      this.dispatcher.setVolume(newLevel);
+      this.dispatcher.setVolume(normalizedSoundLevel);
     }
   }
 
@@ -69,7 +82,7 @@ module.exports = class Bot {
     */
   getYoutubeSearchResults() {
     return this.youtube.makeSearchUrl(this.message)
-                       .getSearchResults();
+      .getSearchResults();
   }
 
   /**
@@ -96,7 +109,7 @@ module.exports = class Bot {
   listSongsInQueue() {
     if (this.queue.songs.length) {
       this.message.reply(
-`
+        `
 Here are the songs currently in queue:
 ${this.queue.showList().join('\n')}
 `);
@@ -160,7 +173,7 @@ ${this.queue.showList().join('\n')}
 
     this._songs.findOne({ ytid: song.ytid }, (err, doc) => {
       if (doc) {
-        this._songs.updateOne({ ytid: song.ytid }, { $inc: { plays: 1 }});
+        this._songs.updateOne({ ytid: song.ytid }, { $inc: { plays: 1 } });
       } else {
         this._songs.insertOne(song);
       }
@@ -171,13 +184,13 @@ ${this.queue.showList().join('\n')}
   playYoutubeSong(song, connection) {
     this.addOrUpdateSongInDB(song);
     const stream = this.youtube.createAudioStream(song.url);
-
     const dispatchConnect = new Promise((resolve, reject) => {
       resolve(connection.playStream(stream, this.streamOptions));
       reject('oops this does not work'); // This might break things
     });
 
     dispatchConnect.then(dispatcher => {
+      console.log('dispatcher: ', dispatcher)
       // Update reference to the stream in parent class
       this.setDispatcher(dispatcher);
 
@@ -188,10 +201,11 @@ ${this.queue.showList().join('\n')}
 
       dispatcher.on('end', endMessage => {
         // This event will fire asynchronously, which causes a bug when skipping songs in autoplay mode.
-        // The work around for this is to set a timeout to insure that the event won't fire for a dispatcher
+        // The work around for this is to set a timeout to ensure that the event won't fire for a dispatcher
         // that should be replaced.
         setTimeout(() => {
           if (this.autoPlay && dispatcher === this.dispatcher) {
+            console.log('in the if statement')
             this.playNext();
           }
         }, 0);
@@ -222,14 +236,16 @@ ${this.queue.showList().join('\n')}
   joinChannel() {
     const channelName = BotHelpers.parseVoiceChannelName(this.message);
     const discordChannel = this.client.channels.find(
-        channel => channel.name === channelName
+      channel => channel.name === channelName
     );
     if (!discordChannel) {
-      this.message.reply(`Oops! Channel name ${ channelName } does not exist.`);
+      this.message.reply(`Oops! Channel name ${channelName} does not exist.`);
       return;
     }
 
-    return discordChannel.join();
+    return discordChannel.join()
+      .then(connection => console.log(`Connected to ${channelName}.`))
+      .catch(console.error);
   }
 
   /**
@@ -274,21 +290,21 @@ ${this.queue.showList().join('\n')}
     this._songs.find({}).toArray((err, docs) => {
       if (docs) {
         const sanitizedDocs = docs.sort((a, b) => b.plays - a.plays)
-              .slice(0, 10)
-              .filter(doc => doc !== undefined )
-              .map((doc, i) => {
-                let listItem = `${i+1}). ${doc.name} (${doc.plays} plays)`;
+          .slice(0, 10)
+          .filter(doc => doc !== undefined)
+          .map((doc, i) => {
+            let listItem = `${i + 1}). ${doc.name} (${doc.plays} plays)`;
 
-                if (includeURL === 'true') {
-                  listItem = listItem + ` [${doc.url}]`;
-                }
+            if (includeURL === 'true') {
+              listItem = listItem + ` [${doc.url}]`;
+            }
 
-                return listItem;
-              });
+            return listItem;
+          });
         this.message.reply(
-`
+          `
 The most played songs are:
-${ sanitizedDocs.join('\n') }
+${ sanitizedDocs.join('\n')}
 `
         );
       }
