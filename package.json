@@ -1,15 +1,13 @@
 {
-  "name": "chocobot",
-  "version": "0.0.1",
-  "description": "A very basic discord bot",
+  "name": "Botsy",
+  "version": "1.0.0",
+  "description": "Discord bot",
   "main": "app.js",
   "dependencies": {
-    "discord": "^0.8.2",
     "discord.js": "^11.4.2",
     "dotenv": "^4.0.0",
     "envs": "^0.1.6",
     "mongodb": "^3.1.8",
-    "opusscript": "^0.0.6",
     "ytdl-core": "^0.29.6"
   },
   "devDependencies": {
