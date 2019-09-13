@@ -20,9 +20,10 @@ module.exports = class BotHelpers {
     return (
 `
 
-Botsy | v0.4
+Botsy v1.0.0 by Ryan Price
+https://github.com/aviato
 
-Hello there!
+Hi!
 Looks like you could use some help. Here are some useful commands:
 
 ${commands.join('\n')}
