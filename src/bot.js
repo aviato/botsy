@@ -16,7 +16,7 @@ module.exports = class Bot {
     this.client = client;
     this.dispatcher = null;
     this.message = null;
-    this.volume = .20;
+    this.volume = .025;
     this.streamOptions = { seek: 0, volume: this.volume };
     this.youtube = new Youtube(
       process.env.YOUTUBE_API_KEY
@@ -52,7 +52,7 @@ module.exports = class Bot {
     let rawSoundLevel = parseInt(this.message.content.split(' ')[1], 10);
 
     if (isNaN(rawSoundLevel)) {
-      return this.message.reply(`Volume level: ${this.volume * 100}.`);
+      return this.message.reply(`Volume level: ${this.volume * 1000}.`);
     }
 
     if (rawSoundLevel > 100) {
@@ -61,12 +61,12 @@ module.exports = class Bot {
       return this.message.reply('Cannot set volume below minimum volume threshold (0).');
     } 
 
-    const normalizedSoundLevel = (rawSoundLevel / 200);
+    const normalizedSoundLevel = (rawSoundLevel / 1000);
 
     if (normalizedSoundLevel > this.volume) {
-      this.message.reply(`Turning volume up to ${normalizedSoundLevel * 200}.`);
+      this.message.reply(`Turning volume up to ${normalizedSoundLevel * 1000}.`);
     } else if (normalizedSoundLevel < this.volume) {
-      this.message.reply(`Turning volume down to ${normalizedSoundLevel * 200}.`);
+      this.message.reply(`Turning volume down to ${normalizedSoundLevel * 1000}.`);
     }
 
     this.volume = normalizedSoundLevel;

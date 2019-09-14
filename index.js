@@ -28,7 +28,7 @@ client.on('ready', () => {
 });
 
 // Translate bot commands into method calls
-const commands = bot => {
+const botCommands = bot => {
   return {
     '$add': () => bot.addSong(),
     '$skip': () => bot.skipSong(),
@@ -56,7 +56,7 @@ const commands = bot => {
         '$showqueue - Show all of the songs in queue',
         '$shuffle - Enable shuffle play - songs in the queue will play in a random order',
         '$mostplayed <show url> - Lists the most played songs. Add the "true" flag to show urls. (ex: $mostplayed true)'
-      ]
+      ];
       bot.message.reply(BotHelpers.formatHelpMessage(helpMenu));
     }
   };
@@ -70,18 +70,18 @@ client.on('message', message => {
   if (!guild.available || message.author.bot) return;
 
   const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
-  const command = parseBotCommand(message.content);
-  const commands = commandDict(bot.setMessage(message));
+  const userCommandInput = parseBotCommand(message.content);
+  const commands = botCommands(bot.setMessage(message));
 
-  if (typeof commands[command] === 'function') {
+  if (typeof commands[userCommandInput] === 'function') {
     // If user has no conductor role 
     if (!conductors.find(conductor => conductor.user.username === message.author.username)) {
       message.reply('Ah ah ah... you didn\'t say the magic word!');
       return;
     } else {
-      commands[command]();
+      commands[userCommandInput]();
     }
-  } else if (!commands[command] && command[0] === '$') {
+  } else if (!commands[userCommandInput] && userCommandInput[0] === '$') {
     message.reply('Command not found. Use $help to list available commands.');
   }
 });
