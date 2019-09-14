@@ -2,7 +2,10 @@ const BotHelpers = require('./botHelpers');
 const Queue = require('./queue');
 const MongoClient = require('mongodb').MongoClient;
 
-/** Class representing a bot */
+/**
+ * The Bot is a high-level abstraction of the functionality provided by Botsy.
+ * With the Bot class you can play songs from Youtube, adjust the volume, add and remove songs form the song queue, etc.
+ */
 module.exports = class Bot {
   /**
    * Create a bot.
@@ -21,7 +24,6 @@ module.exports = class Bot {
     this.queue = new Queue();
     this.autoPlay = false;
     this.shufflePlay = false;
-
 
     if (process.env.MONGODB_ADDRESS) {
       const dbClient = new MongoClient(process.env.MONGODB_ADDRESS);
@@ -59,12 +61,12 @@ module.exports = class Bot {
       return this.message.reply('Cannot set volume below minimum volume threshold (0).');
     } 
 
-    const normalizedSoundLevel = rawSoundLevel / 100;
+    const normalizedSoundLevel = (rawSoundLevel / 200);
 
     if (normalizedSoundLevel > this.volume) {
-      this.message.reply(`Turning volume up to ${normalizedSoundLevel * 100}.`);
+      this.message.reply(`Turning volume up to ${normalizedSoundLevel * 200}.`);
     } else if (normalizedSoundLevel < this.volume) {
-      this.message.reply(`Turning volume down to ${normalizedSoundLevel * 100}.`);
+      this.message.reply(`Turning volume down to ${normalizedSoundLevel * 200}.`);
     }
 
     this.volume = normalizedSoundLevel;
@@ -81,8 +83,7 @@ module.exports = class Bot {
    * @return {string} url - URL for the highest ranked video based on search
     */
   getYoutubeSearchResults() {
-    return this.youtube.makeSearchUrl(this.message)
-      .getSearchResults();
+    return this.youtube.makeSearchUrl(this.message).getSearchResults();
   }
 
   /**
@@ -191,7 +192,7 @@ ${this.queue.showList().join('\n')}
 
     dispatchConnect.then(dispatcher => {
       console.log('dispatcher: ', dispatcher)
-      // Update reference to the stream in parent class
+      // Update reference to the stream
       this.setDispatcher(dispatcher);
 
       // Log any funky errors that are thrown while streaming
@@ -238,6 +239,7 @@ ${this.queue.showList().join('\n')}
     const discordChannel = this.client.channels.find(
       channel => channel.name === channelName
     );
+
     if (!discordChannel) {
       this.message.reply(`Oops! Channel name ${channelName} does not exist.`);
       return;

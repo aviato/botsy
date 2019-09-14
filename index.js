@@ -28,12 +28,12 @@ client.on('ready', () => {
 });
 
 // Translate bot commands into method calls
-const commandDict = bot => {
+const commands = bot => {
   return {
-    '$add': () => bot.addSong(), // add song to the back of the queue
-    '$skip': () => bot.skipSong(), // stop playing the currently playing and play next song
-    '$showqueue': () => bot.listSongsInQueue(), // display queue
-    '$shuffle': () => bot.toggleShufflePlay(), // toggles shuffle mode
+    '$add': () => bot.addSong(),
+    '$skip': () => bot.skipSong(),
+    '$showqueue': () => bot.listSongsInQueue(),
+    '$shuffle': () => bot.toggleShufflePlay(),
     '$autoplay': () => bot.toggleAutoPlay(),
     '$join': () => bot.joinChannel(),
     '$play': () => bot.play(),
@@ -43,7 +43,7 @@ const commandDict = bot => {
     '$resume': () => bot.resume(),
     '$mostplayed': () => bot.displayMostPlayedSongs(),
     '$help': () => {
-      const commands = [
+      const helpMenu = [
         '$play <song name> - Streams the top search result from Youtube (ex: $play who let the dogs out).',
         '$stop - Stop playback',
         '$pause - Pause playback',
@@ -57,7 +57,7 @@ const commandDict = bot => {
         '$shuffle - Enable shuffle play - songs in the queue will play in a random order',
         '$mostplayed <show url> - Lists the most played songs. Add the "true" flag to show urls. (ex: $mostplayed true)'
       ]
-      bot.message.reply(BotHelpers.formatHelpMessage(commands));
+      bot.message.reply(BotHelpers.formatHelpMessage(helpMenu));
     }
   };
 };
@@ -71,7 +71,6 @@ client.on('message', message => {
 
   const conductors = guild.roles.get(process.env.CONDUCTOR_ID).members;
   const command = parseBotCommand(message.content);
-  const channels = client.channels;
   const commands = commandDict(bot.setMessage(message));
 
   if (typeof commands[command] === 'function') {
@@ -88,5 +87,4 @@ client.on('message', message => {
 });
 
 client.login(process.env.TOKEN);
-
                      
