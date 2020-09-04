@@ -7,7 +7,7 @@
     "discord.js": "^11.4.2",
     "dotenv": "^4.0.0",
     "envs": "^0.1.6",
-    "mongodb": "^3.1.8",
+    "mongodb": "^3.1.13",
     "ytdl-core": "^0.29.6"
   },
   "devDependencies": {
