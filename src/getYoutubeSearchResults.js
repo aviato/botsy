@@ -31,9 +31,9 @@ const getYoutubeSearchResults = (searchUrl, makeVideoUrl) => {
       res.on('end', () => {
         try {
           let parsedData = JSON.parse(rawData);
-
+          
           const firstVideoSearchResult = parsedData.items.find(item => {
-            return item.id.kind === 'youtube#video' && item.id.videoId;
+            return item.id && item.id.kind === 'youtube#video' && item.id.videoId;
           });
 
           const song = {
