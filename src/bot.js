@@ -221,6 +221,10 @@ ${this.queue.showList().join('\n')}
       dispatcher.on('speaking', speaking => {
         console.log(`User is speaking? ${speaking}`);
       });
+
+      dispatcher.on('destroyed', destroyed => {
+        console.log(`[DESTROYED]: voice connection destroyed. ${destroyed}`)
+      })
     });
 
     dispatchConnect.catch(error => {
